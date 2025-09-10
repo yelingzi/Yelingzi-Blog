@@ -1,0 +1,118 @@
+:after,
+:before {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  cursor: url('../cursors/arrow.cur'), default;
+  background: var(--grey-0);
+  color: var(--text-color);
+  font-family:
+    'CustomFont',
+    Mulish,
+    -apple-system,
+    'PingFang SC',
+    'Microsoft YaHei',
+    sans-serif;
+  font-size: 1em;
+  overflow: hidden;
+  margin: 0;
+}
+
+/* 链接光标 */
+a,
+button {
+  cursor: url('../cursors/up.cur'), pointer;
+}
+
+/* 禁止光标 */
+.user-select-none {
+  cursor: url('../cursors/no.cur'), not-allowed;
+}
+
+/* 忙光标 */
+.loading {
+  cursor: url('../cursors/busy.cur'), wait;
+}
+
+/* 帮助光标 */
+.help {
+  cursor: url('../cursors/help.cur'), help;
+}
+
+/* 十字光标 */
+.crosshair {
+  cursor: url('../cursors/cross.cur'), crosshair;
+}
+
+/* 光标光标 */
+.text {
+  cursor: url('../cursors/beam.cur'), text;
+}
+
+/* 笔光标 */
+.pen {
+  cursor: url('../cursors/pen.cur'), auto;
+}
+
+/* 工作中光标 */
+.working {
+  cursor: url('../cursors/working.cur'), progress;
+}
+
+/* 可点击元素 */
+.pointer,
+.btn {
+  cursor: url('../cursors/up.cur'), pointer;
+}
+
+/* 文本选择 */
+.user-select {
+  user-select: text;
+  cursor: url('../cursors/beam.cur'), text;
+}
+
+@font-face {
+  font-family: 'CustomFont'; /* 自定义字体名称 */
+  src: url('./font/2.woff2') format('woff2'); /* 指定字体文件路径和格式 */
+  font-weight: normal; /* 字体粗细 */
+  font-style: normal; /* 字体样式 */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family:
+    'NotoSerifSC',
+    -apple-system,
+    'Microsoft YaHei',
+    sans-serif;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 1.25rem 0 0.9375rem;
+}
+
+button,
+input,
+select,
+textarea {
+  background-color: transparent;
+  border-style: none;
+}
+
+.clearfix:after {
+  visibility: hidden;
+  clear: both;
+  display: block;
+  content: '.';
+  height: 0;
+}
+
+.clearfix {
+  zoom: 1;
+}

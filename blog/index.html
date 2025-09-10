@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/yeling.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>叶玲子的小栈</title>
+
+    <base href="./" />
+    <!-- 加载 live 2d -->
+    <script src="/live2d/TweenLite.js" type="text/javascript"></script>
+    <script src="/live2d/live2dcubismcore.min.js" type="text/javascript"></script>
+    <script src="/live2d/pixi.min.js" type="text/javascript"></script>
+    <script src="/live2d/cubism4.min.js" type="text/javascript"></script>
+    <script src="/live2d/pio.js" type="text/javascript"></script>
+    <script src="/live2d/pio_sdk4.js" type="text/javascript"></script>
+    <script src="/live2d/load.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="/live2d/pio.css" />
+
+    <!-- 引入本地 需要处理的资源 -->
+    <link rel="stylesheet" type="text/css" href="./comm/main.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 首屏加载动画 -->
+      <div id="Loading">
+        <h1>YeLingzi`s BLOG</h1>
+        <img class="loading-warp" src="./comm/loading.gif" />
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

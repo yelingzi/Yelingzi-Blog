@@ -1,0 +1,57 @@
+@use './variables.scss' as va;
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin responsive($breakpoint) {
+  @if $breakpoint == sm {
+    @media (max-width: va.$breakpoint-sm) {
+      @content;
+    }
+  }
+  @if $breakpoint == md {
+    @media (max-width: va.$breakpoint-md) {
+      @content;
+    }
+  }
+  @if $breakpoint == lg {
+    @media (max-width: va.$breakpoint-lg) {
+      @content;
+    }
+  }
+  @if $breakpoint == xl {
+    @media (max-width: va.$breakpoint-xl) {
+      @content;
+    }
+  }
+}
+
+@mixin card {
+  background: white;
+  border-radius: va.$border-radius-lg;
+  box-shadow: va.$shadow-md;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: va.$shadow-lg;
+  }
+}
+
+@function darken($color, $amount) {
+  @return mix(black, $color, $amount);
+}
+
+@mixin flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin absolute {
+  position: absolute;
+  top: 0;
+  left: 0;
+}

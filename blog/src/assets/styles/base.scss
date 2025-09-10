@@ -1,0 +1,89 @@
+// body {
+//   cursor: url('@/assets/images/cursors/link.cur'), auto !important; // move cursor to assets/images/cursor/default.png
+// }
+
+// // 定义（在全局样式中定义）
+// @font-face {
+//   font-family: 优设标题黑;
+//   src: url('http://cdn.snows-l.site/blog/fonts/优设标题黑.ttf');
+// }
+// // @font-face {
+// //   font-family: 华文行楷;
+// //   src: url('http://cdn.snows-l.site/blog/fonts/STXINGKA.TTF');
+// // }
+// @font-face {
+//   font-family: DSDIGI;
+//   // src: url('http://cdn.snows-l.site/blog/fonts/DSDIGI.TTF');
+//   src: url('@/assets/font/fontFamily/DSDIGI.TTF');
+// }
+// @font-face {
+//   font-family: 喵喵体;
+//   src: url('@/assets/font/fontFamily/喵喵体.ttf');
+// }
+// @font-face {
+//   font-family: 电影旁白体;
+//   src: url('http://cdn.snows-l.site/blog/fonts/电影旁白体.ttf');
+// }
+// @font-face {
+//   font-family: 菜单体;
+//   src: url('http://cdn.snows-l.site/blog/fonts/菜单体.ttf');
+// }
+
+/* 自定义整个滚动条 */
+::-webkit-scrollbar {
+  // width: 2px; /* 设置滚动条的宽度 */
+  // height: 2px;
+  width: 0;
+  height: 0; /* 隐藏滚动条 */
+  background-color: transparent; /* 背景透明 */
+}
+
+/* 自定义滚动条轨道 */
+::-webkit-scrollbar-track {
+  background-color: transparent; /* 设置轨道的背景颜色 */
+}
+
+/* 自定义滚动条的滑块（thumb） */
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: var(--theme-light-color-8); /* 设置滑块在悬停状态下的背景颜色 */
+}
+
+/* 当滑块悬停或活动时，可以添加更多样式 */
+::-webkit-scrollbar-thumb:hover {
+  width: 8px;
+  background-image: linear-gradient(
+    -45deg,
+    #ee7752,
+    #ce3e75,
+    #23a6d5,
+    #23d5ab
+  ); /* 设置滑块的背景颜色 */
+  border-radius: 4px;
+}
+
+// el-scrollbar 自定义滚动条
+.el-scrollbar {
+  .el-scrollbar__bar.is-horizontal {
+    height: 2px; // 添加横向高度
+  }
+  .el-scrollbar__bar.is-vertical {
+    width: 2px; // 添加纵向宽度
+  }
+  // 横向滚动条
+  .el-scrollbar__bar.is-horizontal .el-scrollbar__thumb {
+    opacity: 1; // 默认滚动条自带透明度
+    height: 2px; // 横向滑块的宽度
+    border-radius: 2px; // 圆角度数
+    background-color: rgba(136, 219, 255, 1); // 滑块背景色
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.15); // 滑块阴影
+  }
+  // 纵向滚动条
+  .el-scrollbar__bar.is-vertical .el-scrollbar__thumb {
+    opacity: 1;
+    width: 2px; // 纵向滑块的宽度
+    border-radius: 2px;
+    background-color: rgba(136, 219, 255, 1);
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+  }
+}
