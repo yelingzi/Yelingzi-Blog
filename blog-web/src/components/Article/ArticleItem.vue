@@ -46,7 +46,7 @@
     </div>
   </div>
   <div class="pagination">
-    <proButton v-if="loadingArticle" v-loading.fullscreen.lock="loading" :info="i18n.loadMore + '...'" width="100px"
+    <proButton v-if="loadingArticle" v-loading.fullscreen.lock="loading" :info="i18n.loadMore + '...'" width="120px"
       before="#ed6ea0" after="#9cd0ed" @click="nextPage">
     </proButton>
     <el-card v-else style="width: 100%;">
@@ -295,6 +295,7 @@ onMounted(() => {
 .pagination {
   display: flex;
   align-items: center;
+  justify-content: center;
   margin-top: 12px;
   padding: 0;
 }

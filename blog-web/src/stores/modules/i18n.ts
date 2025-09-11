@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, reactive, ref } from 'vue'
 import type { LocalConfig } from '@/types/localConfig'
+import { LANG_VERSION_KEY, LANG_VERSION } from '@/constants/i18n'
 
 export const useI18nStore = defineStore(
   'i18n',
@@ -13,21 +14,24 @@ export const useI18nStore = defineStore(
     // 操作方法
     const loadLang = async (lang: string) => {
 
-      const defaultLang = 'zh-CN'
-      lang = lang || defaultLang
+      const finalLang = lang || 'zh-CN'
 
-      // 避免重复加载
-      if (!configs.value[lang]) {
+      // 版本比对：缓存版本 ≠ 当前版本 → 强制重载
+      const cachedVersion = localStorage.getItem(LANG_VERSION_KEY)
+      const needReload = !configs.value[finalLang] || cachedVersion !== LANG_VERSION
+
+      if (needReload) {
         try {
-          // 动态导入语言文件（Vite 特性）
-          const module = await import(`@/assets/locales/${lang}.json`)
-          configs.value[lang] = module.default
-        } catch (error) {
-          console.error(`Failed to load language file: ${lang}`, error)
-          throw new Error(`Language ${lang} not available`)
+          const module = await import(`@/assets/locales/${finalLang}.json`)
+          configs.value[finalLang] = module.default
+          localStorage.setItem(LANG_VERSION_KEY, LANG_VERSION) // 更新版本
+        } catch (e) {
+          console.error(`[i18n] failed to load lang: ${finalLang}`, e)
+          throw new Error(`Language ${finalLang} not available`)
         }
       }
-      currentLang.value = lang
+
+      currentLang.value = finalLang
     }
 
     // Getter 风格的计算属性
@@ -49,6 +53,10 @@ export const useI18nStore = defineStore(
     }
   },
   {
-    persist: true
+    persist: {
+      key: 'store-key',
+      storage: localStorage,
+      pick: ['currentLang'],
+    }
   }
 )

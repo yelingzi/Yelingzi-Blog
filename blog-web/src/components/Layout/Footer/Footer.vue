@@ -30,6 +30,7 @@
             <!-- <span class="num" :style="{ 'background-color': state.webBeianBg }">{{ state.beian }}</span> -->
           </span>
         </span>
+
       </div>
       <div v-else class="m-baian">
         <div class="display-warp" style="margin-top: 10px" @click="handleICPBeian">
@@ -49,6 +50,7 @@
           </span>
         </div>
       </div>
+      <div v-if="ver != ''" class="app-version">版本号：{{ ver }}</div>
     </div>
   </div>
 </template>
@@ -57,7 +59,6 @@
 import { useResize } from '@/utils/common';
 import { useI18nStore } from '@/stores';
 import { getRandomColor } from '@/utils/theme.ts';
-import axios from 'axios';
 import { reactive } from 'vue';
 const isMobi = useResize();
 const useI18n = useI18nStore()
@@ -68,23 +69,7 @@ const state = reactive({
   domainBeianBg: getRandomColor()
 });
 
-// 获取名言名句
-const getSaying = () => {
-  axios.get('https://api.xygeng.cn/one', {}).then(response => {
-    let res = response.data;
-    if (res.code == 200) {
-      if (isMobi) {
-        state.saying = res.data.content.length > 20 ? res.data.content.slice(0, 20) + '...' : res.data.content;
-      } else {
-        state.saying = res.data.content.length > 40 ? res.data.content.slice(0, 40) + '...' : res.data.content;
-      }
-    }
-  });
-};
-// 刷新名言名句
-const handleRefreshSaying = () => {
-  getSaying();
-};
+const ver = import.meta.env.VITE_APP_FULL_VERSION
 
 // ICP备案号
 const handleICPBeian = () => {
@@ -185,6 +170,10 @@ const handleWebBeian = () => {
       text-overflow: ellipsis;
     }
   }
+}
+
+.app-version {
+  color: var(--color-white);
 }
 
 @keyframes animation {

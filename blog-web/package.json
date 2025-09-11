@@ -21,6 +21,7 @@
     "@vitejs/plugin-vue-jsx": "^4.2.0",
     "@vueuse/core": "^13.5.0",
     "axios": "^1.10.0",
+    "dayjs": "^1.11.18",
     "deepcopy": "^2.1.0",
     "element-plus": "^2.10.3",
     "gsap": "^3.13.0",

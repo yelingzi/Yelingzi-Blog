@@ -7,15 +7,15 @@
       </button>
 
       <div class="nav-left">
-        <router-link to="/" class="logo">
+        <div @click="router.push('/')" class="logo">
           <img :src="blogInfo.logo">
           <span class="logo-text">{{ i18n.blogName }}</span>
-        </router-link>
+        </div>
       </div>
 
       <div class="nav-center">
         <div v-for="item in filteredMenuItems" :key="item.path" class="nav-item" @mouseleave="handleMouseLeave">
-          <router-link :to="item.path" class="nav-link" :class="{
+          <div @click="handleDropdownItemClick(item)" class="nav-link" :class="{
             'has-dropdown': item.children,
             'active': isActive(item),
             [item.colorClass]: true
@@ -23,7 +23,7 @@
             <SvgIcon :name="item.icon" class="svg-icon" />
             {{ item.name }}
             <SvgIcon name="icon-xiala" v-if="item.children" class="dropdown-icon svg-icon" />
-          </router-link>
+          </div>
 
           <div v-if="item.children" class="dropdown-menu" :class="{ active: activeDropdown === item.name }">
             <a href="javascript:void(0)" v-for="child in item.children" :key="child.path" class="dropdown-item"
@@ -242,7 +242,7 @@ const menuItems = reactive<MenuItem[]>([
       },
       {
         name: i18n.openSource,
-        path: 'https://blog.yeling.top/',
+        path: 'https://github.com/yelingzi/Yelingzi-Blog',
         icon: 'icon-github',
         colorClass: 'admin-link',
         external: true
@@ -257,12 +257,15 @@ const currentLangList = ref([
 ])
 
 // 计算属性
-const filteredMenuItems = computed(() => {
-  return menuItems.map(item => ({
+const filteredMenuItems = computed(() =>
+  menuItems.map(item => ({
     ...item,
-    path: item.children ? item.children[0].path : item.path
+    path:
+      item.children && item.children.length && item.path === ''
+        ? item.children[0].path
+        : item.path
   }))
-})
+)
 
 // 方法
 const handleOpenMobileMenu = () => {
@@ -311,6 +314,7 @@ const isChildActive = (child: MenuItem): boolean => {
 }
 
 const handleDropdownItemClick = (item: MenuItem) => {
+  console.log(item.path)
   activeDropdown.value = null
   if (item.external) {
     const newWindow = window.open(item.path, '_blank')
@@ -395,7 +399,7 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   z-index: 99;
-  background: rgba(var(--surface-rgb), 0.65);
+  background: rgba(240, 255, 253, 0.65);
   backdrop-filter: blur(10px) saturate(180%);
   -webkit-backdrop-filter: blur(10px) saturate(180%);
   transition: all 0.8s ease;
@@ -517,7 +521,7 @@ onBeforeUnmount(() => {
 
 
   .nav-link {
-    color: var(--text-secondary);
+    color: var(--color-black);
     text-decoration: none;
     transition: all 0.3s ease;
     display: flex;
@@ -554,7 +558,6 @@ onBeforeUnmount(() => {
 
     &.has-dropdown {
       .dropdown-icon {
-        right: va.$spacing-sm;
         transition: transform 0.3s ease;
       }
 
@@ -569,7 +572,7 @@ onBeforeUnmount(() => {
       align-items: center;
       line-height: normal;
       gap: 12px;
-      color: var(--text-primary);
+      color: var(--grey-1);
       text-decoration: none;
       transition: all 0.2s;
 
@@ -621,7 +624,7 @@ onBeforeUnmount(() => {
 .i18n-icon {
   width: 24px;
   height: 24px;
-  color: var(--text-secondary);
+  color: var(--color-black);
 }
 
 .i18n {
@@ -633,7 +636,7 @@ onBeforeUnmount(() => {
   .i18n-icon {
     width: 24px;
     height: 24px;
-    color: var(--text-secondary);
+    color: var(--color-black);
   }
 
   .i18n-menu {
@@ -641,7 +644,7 @@ onBeforeUnmount(() => {
     top: calc(100% + 14px);
     left: 50%;
     transform: translateX(-50%) translateY(5px);
-    background: var(--surface);
+    background: var(--color-white);
     border-radius: va.$border-radius-md;
     box-shadow: va.$shadow-lg;
     width: max-content;
@@ -666,7 +669,7 @@ onBeforeUnmount(() => {
     gap: va.$spacing-sm;
     padding: 8px va.$spacing-md;
     height: 36px;
-    color: var(--text-secondary);
+    color: var(--color-black);
     text-decoration: none;
     transition: all 0.3s ease;
     white-space: nowrap;
@@ -698,7 +701,7 @@ onBeforeUnmount(() => {
     padding: 8px 16px;
     background: var(--hover-bg);
     border-radius: 20px;
-    color: var(--text-secondary);
+    color: var(--color-black);
     text-decoration: none;
     transition: all 0.3s ease;
     border: 1px solid var(--border-color);
@@ -709,7 +712,7 @@ onBeforeUnmount(() => {
     }
 
     &:hover {
-      background: var(--surface);
+      background: var(--color-white);
       color: va.$primary;
       border-color: va.$primary;
       transform: translateY(-1px);
@@ -739,7 +742,7 @@ onBeforeUnmount(() => {
       top: calc(100% + 14px);
       left: 50%;
       transform: translateX(-50%) translateY(5px);
-      background: var(--surface);
+      background: var(--color-white);
       border-radius: va.$border-radius-md;
       box-shadow: va.$shadow-lg;
       width: max-content;
@@ -926,7 +929,7 @@ onBeforeUnmount(() => {
   top: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%) translateY(15px);
-  background: var(--surface);
+  background: var(--color-white);
   border-radius: va.$border-radius-md;
   box-shadow: va.$shadow-lg;
   width: max-content;
@@ -953,7 +956,7 @@ onBeforeUnmount(() => {
     gap: va.$spacing-sm;
     padding: 8px va.$spacing-md;
     height: 36px;
-    color: var(--text-secondary);
+    color: var(--color-black);
     text-decoration: none;
     transition: all 0.3s ease;
     white-space: nowrap;

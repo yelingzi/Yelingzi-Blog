@@ -65,7 +65,13 @@ onUnmounted(() => {
 
 .main-container {
   display: flex;
-  position: relative; // 为绝对定位的子元素提供参考
+  position: relative;
+  align-items: flex-start;
+  justify-content: center;
+  width: 1080px;
+  margin: 0 auto;
+  padding-bottom: 1.75rem;
+  animation: slideUpIn 1s;
 }
 
 // 移动端适配
