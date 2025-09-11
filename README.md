@@ -24,9 +24,9 @@
 | ----- | ---- |
 | JDK   | 17   |
 | MySQL | 5.7  |
-| Redis | 6.0  |
+| Redis | 5.0  |
 | Node  | 18+  |
-| RabbitMQ | 4.1+ |
+| RabbitMQ | 3.0+ |
 
 2.项目文件
 - 前端项目: <br>
