@@ -52,7 +52,6 @@ declare module 'vue' {
     MusicPlayer: typeof import('./src/components/Music/MusicPlayer.vue')['default']
     PageContainer: typeof import('./src/components/pageContainer/PageContainer.vue')['default']
     ParticleClock: typeof import('./src/components/Clock/particleClock.vue')['default']
-    PCMenu: typeof import('./src/components/Layout/Header/PCMenu.vue')['default']
     ProButton: typeof import('./src/components/Button/proButton.vue')['default']
     ProgressBar: typeof import('./src/components/Layout/Progress/ProgressBar.vue')['default']
     ReplyBox: typeof import('./src/components/Comment/ReplyBox.vue')['default']

@@ -17,9 +17,7 @@
 import { onMounted, provide, ref, watch } from 'vue';
 import MyHeader from '@/components/Layout/Header/Header.vue';
 
-
 onMounted(() => {
-
 });
 
 

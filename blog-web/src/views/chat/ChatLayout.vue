@@ -90,11 +90,12 @@ const starting = ref(true)
 /* ---------------- WebSocket ---------------- */
 let ws: WebSocket | null = null
 let pingTimer: number | null = null
+const host = import.meta.env.VITE_WS_BASE_URL
 
 function openWs() {
   let token = userStore.refreshToken ? userStore.refreshToken : userStore.deviceId
   if (ws && ws.readyState === WebSocket.OPEN) return
-  ws = new WebSocket('ws://localhost:8090/ws?token=' + token)
+  ws = new WebSocket(`${host}/ws?token=${token}`)
   ws.onopen = () => {
     pingTimer = window.setInterval(() => ws?.send('ping'), 25_000)
   }
@@ -213,6 +214,8 @@ const initSession = (id: string) => {
 
   saveSession()
 
+  refreshNewCount()
+
   initChating(id)
 
   loadLatestMessages()
@@ -304,7 +307,7 @@ const loadLatestMessages = async () => {
   state.hasMore = data.data.hasMore
 }
 
-/* 4. 轮询 / 获取每天会话的新消息 */
+/* 轮询 / 获取每天会话的新消息 */
 const refreshNewCount = async () => {
   let maxSingleId = 0;
   let maxGroupId = 0;
@@ -353,10 +356,6 @@ const refreshNewCount = async () => {
     }
   }
 
-  initChating(state.currentChatId)
-  state.unReadMessage = state.chating.unReadChat
-  state.chating.unReadChat = 0
-
 }
 
 /* 5. 向上滚动加载历史 */
@@ -402,7 +401,6 @@ async function onLoadMore(done: () => void) {
 onMounted(() => {
   openWs()
   handleMyMessage()
-  refreshNewCount()
   document.addEventListener('mousedown', onMouseDown)
   starting.value = false
 })
