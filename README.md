@@ -17,6 +17,11 @@
 - 演示密码：123456
 
 ## 预览效果
+![](https://www.yeling.top/image/album/show1.jpg)
+![](https://www.yeling.top/image/album/show2.jpg)
+![](https://www.yeling.top/image/album/show3.jpg)
+![](https://www.yeling.top/image/album/show4.jpg)
+![](https://www.yeling.top/image/album/show7.jpg)
 
 ## 快速开始
 1.环境要求
