@@ -91,11 +91,12 @@ const starting = ref(true)
 /* ---------------- WebSocket ---------------- */
 let ws: WebSocket | null = null
 let pingTimer: number | null = null
+const host = import.meta.env.VITE_WS_BASE_URL
 
 function openWs() {
   let token = userStore.refreshToken ? userStore.refreshToken : userStore.deviceId
   if (ws && ws.readyState === WebSocket.OPEN) return
-  ws = new WebSocket('ws://localhost:8090/ws?token=' + token)
+  ws = new WebSocket(`${host}/ws?token=${token}`)
   ws.onopen = () => {
     pingTimer = window.setInterval(() => ws?.send('ping'), 25_000)
   }
@@ -134,8 +135,6 @@ function handleWsMessage(raw: WsMsg) {
   if (state.currentChatId === receiver) {
     chating.value.chatMessageList.push(message)
     chating.value.lastMessage = message
-    handleScrollToBottom()
-    return
   }
 
   /* ---- 2. 非当前会话 ---- */
@@ -356,7 +355,7 @@ onUnmounted(() => {
 const goDefaultChat = () => {
   const defaultChat = chatStore.chatList.at(1) // 聊天室
   if (!defaultChat) {
-    ElMessage.error('聊天室没有会话喵！')
+    ElMessage.info('聊天室没有会话喵！')
     return
   }
   router.push({ name: 'dynamic_36', params: { chatId: defaultChat.route } })
