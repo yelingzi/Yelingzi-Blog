@@ -1,15 +1,18 @@
 <template>
-  <CommonLayout :title="i18n.album" :bg-img="image" />
+  <CommonLayout :title="t('album')" :bg-img="image" />
   <div class="bg">
     <div class="page-container">
       <div class="album-container">
-        <div class="album-item" v-pio="{ text: `${album.albumName}`, type: 'album' }" v-for="album in albumList"
-          :key="album.id">
+        <div v-if="albumList.length > 0" class="album-item" v-pio="{ text: `${album.albumName}`, type: 'album' }"
+          v-for="album in albumList" :key="album.id">
           <ImageWithFallback class="album-cover" :src="album.albumCover" />
-          <router-link :to="`/albums/${album.id}`" class="album-info">
+          <div @click="router.push(`/albums/${album.id}`)" class="album-info">
             <div class="album-name">{{ album.albumName }}</div>
             <div class="album-desc">{{ album.albumDesc }}</div>
-          </router-link>
+          </div>
+        </div>
+        <div v-else>
+          <el-empty description="相册为空"></el-empty>
         </div>
       </div>
     </div>
@@ -23,9 +26,11 @@ import type { Album } from "@/types/album";
 import image from "@/assets/images/album-bg.jpg"
 import { ref, onMounted } from "vue";
 import { getAlbumListService } from "@/api/album";
-import { useI18nStore } from "@/stores";
+import { useRouter } from "vue-router";
+import { t } from '@/utils/i18n'
 
-const i18n = useI18nStore().currentConfig
+const router = useRouter()
+
 const albumList = ref<Album[]>([]);
 
 const getAlbumList = async () => {

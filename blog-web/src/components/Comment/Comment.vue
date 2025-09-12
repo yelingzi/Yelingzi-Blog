@@ -1,7 +1,7 @@
 <template>
   <div class="reply-warp" id="reply-wrap">
 
-    <DividerLine margin="20px" :content="i18n.comment"></DividerLine>
+    <DividerLine margin="20px" :content="t('comment')"></DividerLine>
 
     <ReplyBox @reload="reloadComments" :comment-type="commentType" :id="id"></ReplyBox>
     <div v-if="commentList.length > 0">
@@ -82,15 +82,15 @@ import type { Comment, LikeList } from '@/types/comment';
 import ReplyBox from './ReplyBox.vue';
 import DividerLine from '../Hr/DividerLine.vue';
 import { getDateDiff } from '@/utils/common';
-import { ref, computed, reactive, toRefs, watch, nextTick, onMounted, defineAsyncComponent } from 'vue';
-import { useUserStore, useI18nStore } from '@/stores';
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue';
+import { useUserStore } from '@/stores';
 import { addArticleCommentLikeService, addTalkCommentLikeService, delArticleCommentLikeService, delTalkCommentLikeService, getArticleCommentLikeListService, getArticleCommentListService, getTalkCommentLikeListService, getTalkCommentListService } from '@/api/comment';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useRoute, useRouter } from 'vue-router';
-
+import { t } from '@/utils/i18n'
 const router = useRouter()
 const route = useRoute()
-const i18n = useI18nStore().currentConfig
+
 const badgeIcon = defineAsyncComponent(() =>
   import('@/assets/icons/badge.svg')
 );

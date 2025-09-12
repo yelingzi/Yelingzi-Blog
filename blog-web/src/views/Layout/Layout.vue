@@ -24,10 +24,9 @@ import MyHeader from '@/components/Layout/Header/Header.vue';
 import MyFooter from '@/components/Layout/Footer/Footer.vue'
 import ProgressBar from '@/components/Layout/Progress/ProgressBar.vue';
 import { useRoute } from 'vue-router';
-import { useUserStore, useI18nStore } from '@/stores';
+import { useUserStore } from '@/stores';
 import { userInfoService, userViewService, viewService } from '@/api/login';
 
-const i18n = useI18nStore()
 const userState = useUserStore()
 const layoutRef = ref<HTMLElement | null>(null)
 const disabledSmooth = ref(true)
@@ -82,7 +81,6 @@ const handleDailyFirstView = async () => {
 
 onMounted(() => {
   checkLogin()
-  i18n.loadLang(i18n.currentLang)
   handleDailyFirstView()
   userState.checkIsFirstView()
 });

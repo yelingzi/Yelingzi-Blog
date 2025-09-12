@@ -37,11 +37,11 @@
         </div>
       </Vue3DraggableResizable>
       <div class="message-write">
-        <h1 class="message-title">{{ i18n.messageBorad }}</h1>
+        <h1 class="message-title">{{ t('messageBorad') }}</h1>
         <div class="message-input">
           <input class="input text" v-pio="{ text: '留下你的想法吧' }" v-model="content" @click="show = true"
-            @keyup.enter="send" :placeholder="i18n.messageInput" />
-          <button class="send" @click="send" v-if="show">{{ i18n.send }}</button>
+            @keyup.enter="send" :placeholder="t('messageInput')" />
+          <button class="send" @click="send" v-if="show">{{ t('send') }}</button>
         </div>
       </div>
 
@@ -59,6 +59,7 @@ import { formatDate } from "@/utils/common";
 import { addMessageService, getMessageListService } from "@/api/message";
 import Vue3DraggableResizable from 'vue3-draggable-resizable'
 import { useUserStore, useI18nStore } from "@/stores";
+import { t } from '@/utils/i18n'
 
 interface Message {
   id: number;
@@ -75,7 +76,7 @@ interface MessagePaper {
   x: number,
   y: number
 }
-const i18n = useI18nStore().currentConfig
+
 const content = ref("");
 const show = ref(false)
 const danmaku = ref();

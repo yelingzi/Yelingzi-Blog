@@ -4,7 +4,7 @@
 
       <div class="reply-box-avatar">
         <el-avatar :size="50" v-if="user.avatar" :src="user.avatar" alt="" />
-        <el-avatar :size="50" v-else alt="">{{ i18n.user }}</el-avatar>
+        <el-avatar :size="50" v-else alt="">{{ t('user') }}</el-avatar>
       </div>
 
       <div class="reply-box-warp">
@@ -19,7 +19,7 @@
           <!-- <Emoji @add-emoji="handleEmoji" @choose-type="handleType"></Emoji> -->
           <div></div>
           <div class="reply-box-send btn" :class="sendActive ? 'send-active' : ''" @click="handleAdd">
-            {{ i18n.comment }}
+            {{ t('comment') }}
           </div>
         </div>
 
@@ -32,16 +32,16 @@
 
 <script lang="ts" setup>
 import { addArticleCommentService, addTalkCommentService } from '@/api/comment';
-import { useUserStore, useI18nStore } from '@/stores';
+import { useUserStore } from '@/stores';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, nextTick, onMounted, reactive, ref, toRefs, watch, type CSSProperties } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-
+import { t } from '@/utils/i18n'
 const router = useRouter()
 const route = useRoute()
 const userState = useUserStore()
 const user = userState.getUserState()
-const i18n = useI18nStore().currentConfig
+
 const emit = defineEmits(["reload"]);
 
 interface Props {

@@ -2,7 +2,7 @@
   <div ref="brandRef" class="brand-container">
     <div class="brand">
       <!-- 标题 -->
-      <p class="artboard">{{ blog.nickname }}</p>
+      <p class="artboard">{{ t('nickname') }}</p>
       <!-- 打字机 -->
       <Typeit v-if="yiYan.hitokotoList.length > 0" :data="yiYan.hitokotoList" :speed="100" :delete-speed="50"
         :pause-time="3000" />
@@ -18,13 +18,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted, inject, type Ref } from 'vue'
-import { useI18nStore } from "@/stores"
+import { t } from '@/utils/i18n'
 import Typeit from "@/components/Typeit/Typeit.vue"
 import WaveOne from "@/components/Waves/WaveOne.vue"
 import { useYiYanStore } from '@/stores/modules/yiyan'
 
 const yiYan = useYiYanStore()
-const blog = useI18nStore().currentConfig
 const brandRef = ref<HTMLElement>()
 const layoutRef = inject<Ref<HTMLElement | null>>('scrollContainer', ref<HTMLElement | null>(null));
 
@@ -57,7 +56,7 @@ const scrollDown = () => {
     // 自定义容器的滚动逻辑
     const container = layoutRef.value
     const containerScrollTop = container.scrollTop
-    const elementBottomRelative = elementRect.bottom + containerScrollTop - container.offsetTop
+    const elementBottomRelative = elementRect.bottom + containerScrollTop - container.offsetTop - 74
 
     container.scrollTo({
       top: elementBottomRelative,

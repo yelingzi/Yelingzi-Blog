@@ -2,7 +2,7 @@
   <div class="tag-wall">
     <div class="tag-text">
       <SvgIcon name="icon-youhuiquan" style="margin-right: 0.15rem" />
-      {{ i18n.tagCloud }}
+      {{ t('tagCloud') }}
     </div>
     <div class="tag-cloud" ref="wrapper" @mouseenter="stopRotate" @mouseleave="startRotate">
       <p v-for="(item, index) in data" :key="index" ref="tag" @click="clickTag(item)"
@@ -20,7 +20,8 @@ import { ref, reactive, onMounted, onUnmounted, watch } from 'vue';
 import { getTagListService } from '@/api/article';
 import type { Tags } from '@/types/tag';
 import { useRouter } from 'vue-router';
-import { useI18nStore, useBlogStore } from '@/stores';
+import { useBlogStore } from '@/stores';
+import { t } from '@/utils/i18n'
 type TimeoutHandle = ReturnType<typeof setTimeout>
 
 interface TagItem {
@@ -29,7 +30,6 @@ interface TagItem {
   z: number;
   ele: HTMLParagraphElement;
 }
-const i18n = useI18nStore().currentConfig
 const router = useRouter();
 
 const data = ref<Tags[]>([]);

@@ -1,5 +1,5 @@
 <template>
-  <CommonLayout :title="i18n.friend" :bgImg="friendLetterMiddle" />
+  <CommonLayout :title="t('friend')" :bgImg="friendLetterMiddle" />
   <div class="bg">
     <div class="page-container">
       <div class="form-wrap" :style="formWrapStyle" @click="toggleEnvelope">
@@ -52,7 +52,7 @@
       <FriendInfoSection :title="prop" :items="applicationInfo" />
 
       <!-- 友链分类展示 -->
-      <FriendCard :friendList="friendList" :title="i18n.friendlyLink" @click-resource-path="openLink" />
+      <FriendCard :friendList="friendList" :title="t('friendlyLink')" @click-resource-path="openLink" />
     </div>
   </div>
 </template>
@@ -75,9 +75,9 @@ import { addFriendService, addUserFriendService, getFriendService } from '@/api/
 import { useI18nStore, useUserStore } from "@/stores";
 
 const userState = useUserStore()
-const i18n = useI18nStore().currentConfig
-const prop = ref("🌸" + i18n.proposal)
-const info = ref("🌸" + i18n.webInfo)
+import { t } from '@/utils/i18n'
+const prop = ref("🌸" + t('proposal'))
+const info = ref("🌸" + t('webInfo'))
 // 响应式数据
 const friend = ref({
   title: '',
@@ -218,8 +218,8 @@ const onMouseDown = (e: MouseEvent) => {
 // 生命周期
 onMounted(() => {
   fetchFriends()
-  prop.value = "🌸" + i18n.proposal
-  info.value = "🌸" + i18n.webInfo
+  prop.value = "🌸" + t('proposal')
+  info.value = "🌸" + t('webInfo')
   document.addEventListener('mousedown', onMouseDown)
 })
 onUnmounted(() => document.removeEventListener('mousedown', onMouseDown))

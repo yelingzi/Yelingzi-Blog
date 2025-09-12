@@ -1,5 +1,5 @@
 <template>
-  <CommonLayout :title="i18n.tag" :bgImg="bgImg" />
+  <CommonLayout :title="t('tag')" :bgImg="bgImg" />
   <div class="bg">
     <div class="page-container">
       <div class="tag-cloud">
@@ -23,13 +23,11 @@ import bgImg from '@/assets/images/bg-article.jpg'
 import CommonLayout from '../Layout/CommonLayout.vue';
 import Tag from './Tag.vue';
 import DividerLine from '@/components/Hr/DividerLine.vue';
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { getTagListService } from '@/api/article';
-import { useI18nStore, useBlogStore } from "@/stores";
-import { useRoute } from 'vue-router'
-const route = useRoute()
+import { useBlogStore } from "@/stores";
 
-const i18n = useI18nStore().currentConfig
+import { t } from '@/utils/i18n'
 const blog = useBlogStore()
 const tagId = blog.tagId
 interface Tag {

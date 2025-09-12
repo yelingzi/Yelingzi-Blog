@@ -1,14 +1,14 @@
 <template>
   <div class="container">
     <div class="header">
-      <div class="title">{{ i18n.search }}</div>
+      <div class="title">{{ t('search') }}</div>
       <component class="icon pointer" :is="closeIcon" @click.stop="onClose()" />
     </div>
     <div class="search-wrapper">
       <div class="search-container">
         <div class="search-input">
           <input class="input text" v-pio="{ text: '输入想要搜索的内容吧' }" v-model="content" @keyup.enter="search"
-            :placeholder="i18n.seachInput" />
+            :placeholder="t('seachInput')" />
           <button class="send pointer" @click="search">
             <SvgIcon name="icon-Search" class="serach-icon" size="32" />
           </button>
@@ -23,12 +23,12 @@
 
 <script lang="ts" setup>
 import { defineAsyncComponent, onMounted, ref } from 'vue';
-import { useI18nStore } from '@/stores';
+import { t } from '@/utils/i18n'
 import SearchArticle from './SearchArticle.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter()
-const i18n = useI18nStore().currentConfig
+
 const closeIcon = defineAsyncComponent(() =>
   import('@/assets/icons/close.svg')
 );

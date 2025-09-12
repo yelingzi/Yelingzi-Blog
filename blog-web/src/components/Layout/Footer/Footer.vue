@@ -13,19 +13,19 @@
         state.saying }} 」</div> -->
       <div class="sheming display-warp" style="text-wrap: nowrap">本站内容仅用于学习交流，如有侵权！请联系站长删除。敬请谅解！</div>
       <div class="copy-right display-warp" style="margin-right: 14px">Copyright ©2024 - {{ new Date().getFullYear() }}
-        By {{ i18n.nickname }} 版权所有</div>
+        By {{ t('nickname') }} 版权所有</div>
       <div style="margin: 5px 0; color: #fff; display: flex; justify-content: center; align-items: center"
         v-if="!isMobi">
         <span class="pointer beianhao-value hover-shadow" @click="handleICPBeian">
           <!-- <span class="pre">{{ state.domainBeianPre }}</span> -->
-          <span class="num" :style="{ 'background-color': state.domainBeianBg }">{{ i18n.icpBeian }}</span>
+          <span class="num" :style="{ 'background-color': state.domainBeianBg }">{{ t('icpBeian') }}</span>
         </span>
         <span class="web-beian-warp pointer" style="margin-left: 20px" @click="handleWebBeian">
           <span class="beianhao-value hover-shadow">
             <span class="pre">
               <img style="margin: -5px 5px 0 0px; width: 14px; height: 14px; vertical-align: middle"
                 src="@/assets/images/gongan.png" alt="" />
-              <!-- {{ state.beian }} -->{{ i18n.beian }}
+              <!-- {{ state.beian }} -->{{ t('beian') }}
             </span>
             <!-- <span class="num" :style="{ 'background-color': state.webBeianBg }">{{ state.beian }}</span> -->
           </span>
@@ -36,7 +36,7 @@
         <div class="display-warp" style="margin-top: 10px" @click="handleICPBeian">
           <span class="pointer beianhao-value hover-shadow">
             <!-- <span class="pre">{{ state.domainBeianPre }}</span> -->
-            <span class="num" :style="{ 'background-color': state.domainBeianBg }">{{ i18n.icpBeian }}</span>
+            <span class="num" :style="{ 'background-color': state.domainBeianBg }">{{ t('icpBeian') }}</span>
           </span>
         </div>
         <div class="display-warp" style="margin-top: 10px" @click="handleWebBeian">
@@ -44,7 +44,7 @@
             <span class="pre">
               <img style="margin: -5px 0px 0px 0; width: 14px; height: 14px; vertical-align: middle"
                 src="@/assets/images/gongan.png" alt="" />
-              <!-- {{ state.webBeianPre }} -->{{ i18n.beian }}
+              <!-- {{ state.webBeianPre }} -->{{ t('beian') }}
             </span>
             <!-- <span class="num" :style="{ 'background-color': state.webBeianBg }">{{ state.beian }}</span> -->
           </span>
@@ -57,12 +57,11 @@
 
 <script lang="ts" setup>
 import { useResize } from '@/utils/common';
-import { useI18nStore } from '@/stores';
+import { t } from '@/utils/i18n'
 import { getRandomColor } from '@/utils/theme.ts';
 import { reactive } from 'vue';
 const isMobi = useResize();
-const useI18n = useI18nStore()
-const i18n = useI18n.currentConfig
+
 const state = reactive({
   saying: isMobi ? '渔得鱼心满意足，樵得樵眼笑眉舒！' : '渔得鱼心满意足，樵得樵眼笑眉舒！',
   webBeianBg: getRandomColor(),

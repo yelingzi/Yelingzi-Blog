@@ -1,5 +1,5 @@
 <template>
-  <CommonLayout :title="i18n.talk" :bgImg="bgImg" />
+  <CommonLayout :title="t('talk')" :bgImg="bgImg" />
   <div class="bg">
     <div class="page-container" v-if="talkList.length > 0">
       <div class="talk-item" v-slide-in v-for="talk in talkList" :key="talk.id">
@@ -8,8 +8,7 @@
           <el-avatar :src="talk.userAvatar" fit="cover" />
           <div class="talk-info">
             <span class="talk-user-name">{{ talk.nickname }}
-              <!-- <svg-icon icon-class="badge"
-                style="margin-left: 0.4rem;"></svg-icon> -->
+
             </span>
             <div class="talk-info-bottom">
               <div v-if="talk.isTop === 1" style="color:#ee6b8b;margin-right: 0.5rem;">
@@ -19,37 +18,28 @@
             </div>
           </div>
         </div>
+
         <!-- 说说内容 -->
-        <router-link :to="{ name: 'talk', params: { id: talk.id } }" class="talk-title" v-html="talk.title">
-        </router-link>
-        <router-link v-pio="{ text: `这条说说`, type: 'look' }" :to="{ name: 'talk', params: { id: talk.id } }"
-          class="talk-content" v-html="talk.content">
-        </router-link>
+        <div @click="toTalkId(talk.id)" v-pio="{ text: `这条说说`, type: 'look' }">
+          <div class="talk-title" v-html="talk.title">
+          </div>
+          <div class="talk-content" v-html="talk.content">
+          </div>
+        </div>
+
         <!-- 说说图片 -->
         <div class="talk-image">
           <ImageList v-if="talk.imageUrl.length > 1" :image-layout="8" :image-list="talk.imageUrl"></ImageList>
           <ImageList v-else :image-layout="14" :image-list="talk.imageUrl"></ImageList>
         </div>
-        <!-- 说说信息 -->
-        <!-- <router-link :to="{ name: 'talk', params: { id: talk.id } }" class="info" style="margin-top: 0.5rem;"> -->
-        <!-- 点赞量 -->
-        <!-- <span class="talk-like info">
-            <font-awesome-icon :icon="['far', 'thumbs-up']" style="margin-right: 5px;" />
-            {{ talk.likeCount }}
-          </span> -->
-        <!-- 评论量 -->
-        <!-- <span class="talk-comment info">
-            <font-awesome-icon :icon="['fas', 'comment-dots']" style="margin-right: 5px;" />
-            {{ talk.commentCount }}
-          </span> -->
-        <!-- </router-link> -->
+
       </div>
       <div class="loading-warp">
-        <proButton v-if="loadingTalk" v-loading.fullscreen.lock="loading" :info="i18n.loadMore + '...'" width="100px"
+        <proButton v-if="loadingTalk" v-loading.fullscreen.lock="loading" :info="t('loadMore') + '...'" width="120px"
           before="#ed6ea0" after="#9cd0ed" @click="nextPage">
         </proButton>
         <el-card v-else style="width: 100%;">
-          <div style="text-align: center;">{{ i18n.loadEnd }}</div>
+          <div style="text-align: center;">{{ t('loadEnd') }}</div>
         </el-card>
       </div>
     </div>
@@ -68,9 +58,10 @@ import CommonLayout from "../Layout/CommonLayout.vue";
 import ImageList from "@/components/Image/ImageList.vue";
 import bgImg from '@/assets/images/talks-bg.jpg'
 import { getTalkListByPageService } from "@/api/talk";
-import { useI18nStore } from "@/stores";
+import { useRouter } from "vue-router";
 
-const i18n = useI18nStore().currentConfig
+const router = useRouter()
+import { t } from '@/utils/i18n'
 const loading = ref(false)
 const loadingTalk = ref(true)
 const data = reactive({
@@ -113,6 +104,10 @@ const getList = async () => {
 const nextPage = () => {
   data.page += 1
   getList()
+}
+
+const toTalkId = (id: string | number) => {
+  router.push({ name: 'talk', params: { id: id } })
 }
 
 onMounted(() => {

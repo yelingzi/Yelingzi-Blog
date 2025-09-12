@@ -1,28 +1,17 @@
 <template>
-  <div v-if="i18nStore.isLangLoaded">
+  <I18nProvider>
     <RouterView></RouterView>
-
-  </div>
+  </I18nProvider>
 </template>
 
 <script lang="ts" setup>
 import { RouterView } from 'vue-router'
 import { init } from './init';
-// 在组件中
-import { useI18nStore } from './stores';
+import I18nProvider from './components/Language/I18nProvider.vue';
 import { onMounted } from 'vue'
 
-const i18nStore = useI18nStore()
-
-
 onMounted(async () => {
-  try {
-    if (!i18nStore.isLangLoaded) {
-      await i18nStore.loadLang('zh-CN')
-    }
-  } finally {
-    i18nStore.isLangLoaded = true
-  }
+
   init()
   console.log(
     "   __     ________ _      _____ _   _  _____ ___________ \n" +

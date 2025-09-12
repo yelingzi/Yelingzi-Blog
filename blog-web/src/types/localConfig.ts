@@ -1,12 +1,15 @@
 // types/localConfig.d.ts
 export interface LocalConfig {
+
+  // 索引签名
+  [key: string]: string;
+
   blogName: string;
   nickname: string;
   beian: string;
   icpBeian: string;
   signature: string;
   aboutBlog: string;
-  aboutAuthor: string[];
   friend: string;
   album: string;
   messageBorad: string;

@@ -10,7 +10,7 @@
   <div class="tiele-container">
     <div class="tiele">
       <!-- 标题 -->
-      <p class="arttiele">{{ i18n.about }}</p>
+      <p class="arttiele">{{ t('about') }}</p>
     </div>
   </div>
   <div class="page-container bg">
@@ -36,9 +36,9 @@
     </div>
     <snowHr />
 
-    <FriendInfoSection :title="i18n.aboutMe" :items="aboutme" />
+    <FriendInfoSection :title="t('aboutMe')" :items="aboutme" />
 
-    <FriendInfoSection :title="i18n.aboutBlog" :items="aboutBlog" />
+    <FriendInfoSection :title="t('aboutBlog')" :items="aboutBlog" />
 
   </div>
 </template>
@@ -56,7 +56,10 @@ const aboutBlog = ref(['本网站基于Vue3+TypeScript前端架构与Spring Boot
   '客户端页面参考借鉴了一些优秀的开源项目，并对使用开源项目代码做了大量修改以适配vue3和TypeScript。',
   '管理后台和服务端为我从零开始学习，设计和开发，包括架构设计、数据库建模到核心功能实现的全过程。'])
 const aboutme = ref(['一位正在寻找工作的苦逼大学生...'])
-const i18n = useI18nStore().currentConfig
+const i18nStore = useI18nStore()
+const t = (key: string) => {
+  return i18nStore.currentConfig[key] || key
+}
 </script>
 
 <style lang="scss" scoped>

@@ -9,12 +9,12 @@
         <el-avatar class="avatar" :src="blogInfo.avatar" alt="作者头像" />
       </div>
       <div class="status-badge">
-        <span>{{ i18n.online }}</span>
+        <span>{{ t('online') }}</span>
       </div>
     </div>
     <div class="author-info">
-      <h3>{{ i18n.nickname }}</h3>
-      <p class="bio">{{ i18n.signature }}</p>
+      <h3>{{ t('nickname') }}</h3>
+      <p class="bio">{{ t('signature') }}</p>
     </div>
     <!-- <div class="social-links">
       <div v-for="item in socialLinks" :key="item.type">
@@ -32,11 +32,11 @@
 
 
 <script lang="ts" setup>
-import { useBlogStore, useI18nStore } from '@/stores';
-
+import { useBlogStore } from '@/stores';
+import { t } from '@/utils/i18n'
 const blogData = useBlogStore();
 const blogInfo = blogData.blogInfo
-const i18n = useI18nStore().currentConfig
+
 </script>
 
 <style lang="scss" scoped>

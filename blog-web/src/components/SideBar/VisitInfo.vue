@@ -1,7 +1,7 @@
 <template>
   <div class="visit-info slider-item-warp" :class="{ 'intersection-observer': isMobi }" v-if="visit.ip">
     <div class="slider-title">
-      <SvgIcon name="icon-diqiu" color="#222" />{{ i18n.accessInfo }}
+      <SvgIcon name="icon-diqiu" color="#222" />{{ t('accessInfo') }}
     </div>
     <el-divider style="margin: 12px 0 0 0;" />
     <div class="visit-content-warp">
@@ -9,7 +9,7 @@
       <div class="visit-item-warp">
         <div class="visit-item">
           <div class="visit-label">
-            <SvgIcon name="icon-rili1" />{{ i18n.date }}：
+            <SvgIcon name="icon-rili1" />{{ t('date') }}：
           </div>
           <div class="visit-value text">{{ visit.week }}</div>
         </div>
@@ -30,37 +30,37 @@
         </div>
         <div class="visit-item">
           <div class="visit-label">
-            <SvgIcon name="icon-chengshi" color="#222" />{{ i18n.city }}：
+            <SvgIcon name="icon-chengshi" color="#222" />{{ t('city') }}：
           </div>
           <div class="visit-value text">{{ visit.location }}</div>
         </div>
         <div class="visit-item">
           <div class="visit-label">
-            <SvgIcon name="icon-gugeliulanqi" color="#222" />{{ i18n.browser }}：
+            <SvgIcon name="icon-gugeliulanqi" color="#222" />{{ t('browser') }}：
           </div>
           <div class="visit-value text">{{ visit.browser }}</div>
         </div>
         <div class="visit-item">
           <div class="visit-label">
-            <SvgIcon name="icon-diannao" color="#222" />{{ i18n.platform }}：
+            <SvgIcon name="icon-diannao" color="#222" />{{ t('platform') }}：
           </div>
           <div class="visit-value text">{{ visit.system }}</div>
         </div>
         <div class="visit-item">
           <div class="visit-label">
-            <SvgIcon name="icon-kongqiwendu" color="#222" />{{ i18n.temperature }}：
+            <SvgIcon name="icon-kongqiwendu" color="#222" />{{ t('temperature') }}：
           </div>
           <div class="visit-value text">{{ visit.low }} ~ {{ visit.high }}</div>
         </div>
         <div class="visit-item">
           <div class="visit-label">
-            <SvgIcon name="icon-tianqi" color="#222" />{{ i18n.weather }}：
+            <SvgIcon name="icon-tianqi" color="#222" />{{ t('weather') }}：
           </div>
           <div class="visit-value text">{{ visit.tq }}</div>
         </div>
         <div class="visit-item">
           <div class="visit-label">
-            <SvgIcon name="icon-fengli" color="#222" />{{ i18n.wind }}：
+            <SvgIcon name="icon-fengli" color="#222" />{{ t('wind') }}：
           </div>
           <div class="visit-value text">{{ visit.fl }} {{ visit.fengxiang }}</div>
         </div>
@@ -72,21 +72,14 @@
 
 <script lang="ts" setup>
 import { useResize } from '@/utils/common';
-import axios from 'axios';
-import { useI18nStore, useTianqiStore } from '@/stores';
+import { useTianqiStore } from '@/stores';
 import { computed, defineAsyncComponent, h, onMounted, reactive, ref } from 'vue';
-import type { Visit } from '@/types/home';
-
-const useI18n = useI18nStore()
-const i18n = useI18n.currentConfig
+import { t } from '@/utils/i18n'
 
 const tianqi = useTianqiStore()
 const visit = tianqi.visit
 
 const isMobi = useResize();
-
-
-const currentWeather = ref('');
 
 // 动态图标计算属性（自动响应currentWeather变化）
 const weatherIcon = computed(() =>

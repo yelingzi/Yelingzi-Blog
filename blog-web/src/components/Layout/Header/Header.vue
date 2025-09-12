@@ -7,7 +7,7 @@
       </button>
 
       <div class="nav-left">
-        <div @click="router.push('/')" class="logo">
+        <div @click="router.push('/')" class="logo pointer">
           <img :src="blogInfo.logo">
           <span class="logo-text">{{ i18n.blogName }}</span>
         </div>
@@ -15,7 +15,7 @@
 
       <div class="nav-center">
         <div v-for="item in filteredMenuItems" :key="item.path" class="nav-item" @mouseleave="handleMouseLeave">
-          <div @click="handleDropdownItemClick(item)" class="nav-link" :class="{
+          <div @click="handleDropdownItemClick(item)" class="nav-link pointer" :class="{
             'has-dropdown': item.children,
             'active': isActive(item),
             [item.colorClass]: true
@@ -40,6 +40,8 @@
       <div class="nav-right">
 
 
+        <!-- <LanguageSwitcher></LanguageSwitcher> -->
+
         <div v-if="!isMobi" v-pio="{ text: `这题可以切换语言哦` }" class="i18n" @mouseleave="handleMouseLeaveI18n"
           @mouseenter="handleMouseEnterI18n">
 
@@ -50,7 +52,7 @@
 
           <div v-if="currentLangList" class="i18n-menu" :class="{ active: isDropdownOpen }">
             <div v-for="currentLang in currentLangList" :key="currentLang.id" class="i18n-item pointer"
-              @click="handleI18n(currentLang.id)">
+              @click="handleSwitch(currentLang.id)">
               {{ currentLang.text }}
             </div>
           </div>
@@ -68,7 +70,7 @@
         </div> -->
         <a class="search-btn" @click="handleSearch">
           <SvgIcon name="icon-Search" />
-          <span v-if="!isMobi" class="search-text">{{ i18n.search }}</span>
+          <span v-if="!isMobi" class="search-text">{{ t('search') }}</span>
         </a>
 
         <!-- 用户信息 -->
@@ -78,11 +80,11 @@
           <div class="user-info">
             <div v-if="userState.getIsLogin()" class="user-section">
               <div class="avatar" @mouseenter="showDropdown = true">
-                <el-avatar :src="userInfo.avatar"></el-avatar>
+                <YlAvatar :src="userInfo.avatar"></YlAvatar>
               </div>
               <div class="user-menu" :class="{ active: isDropdownOpenUser }">
                 <div class="dropdown-header">
-                  <el-image :size="100" class="user-avatar" :src="userInfo.avatar" />
+                  <ImageWithFallback class="user-avatar" :src="userInfo.avatar" />
                   <div class="user-details text">
                     <span class="username text">{{ userInfo.nickname }}</span>
                   </div>
@@ -107,6 +109,8 @@
     </div>
   </div>
 
+
+
   <div class="search-home-warp" :class="{ 'is-show-search': isShowSearch }">
     <Search @close="handleCloseSearch" :show="isShowSearch"></Search>
   </div>
@@ -122,6 +126,11 @@ import { useUserStore, useI18nStore, useBlogStore } from '@/stores'
 import Search from '@/components/Search/Search.vue'
 import { useResize } from '@/utils/common'
 import { useChatStore } from '@/stores/modules/chat'
+import YlAvatar from '@/components/Image/YlAvatar.vue'
+import ImageWithFallback from '@/components/Image/ImageWithFallback.vue'
+import LanguageSwitcher from '@/components/Language/LanguageSwitcher.vue'
+import { handleI18n } from '@/utils/i18n'
+import { useLangChange } from '@/constants/useLangChange'
 
 const i18nIcon = defineAsyncComponent(() =>
   import('@/assets/icons/i18n.svg')
@@ -148,117 +157,123 @@ const isShowSearch = ref(false)
 const hoverTimerUser = ref(0);
 const isDropdownOpenUser = ref(false)
 const isMobi = useResize()
-// 菜单数据
-const menuItems = reactive<MenuItem[]>([
-  {
-    name: i18n.home,
-    path: '/',
-    icon: 'icon-zhuye',
-    colorClass: 'home-link'
-  },
-  {
-    name: i18n.article,
-    path: '/archive',
-    icon: 'icon-shu',
-    colorClass: 'archive-link',
-    children: [
-      {
-        name: i18n.archive,
-        path: '/archive',
-        icon: 'icon-jishi',
-        colorClass: 'clock-link'
-      },
-      {
-        name: i18n.category,
-        path: '/category',
-        icon: 'icon-fenlei',
-        colorClass: 'category-link'
-      },
-      {
-        name: i18n.tag,
-        path: '/tag',
-        icon: 'icon-biaoqian',
-        colorClass: 'tag-link'
-      }
-    ]
-  },
-  {
-    name: i18n.talk,
-    path: '/talks',
-    icon: 'icon-xiaoxi',
-    colorClass: 'talk-link'
-  },
-  {
-    name: i18n.album,
-    path: '/album',
-    icon: 'icon-zhaopian',
-    colorClass: 'photos-link'
-  },
-  {
-    name: i18n.messageBorad,
-    path: '/message',
-    icon: 'icon-xinfeng',
-    colorClass: 'message-link',
-    children: [
-      {
-        name: i18n.chatRoom,
-        path: '/chat/chatroom',
-        icon: 'icon-liaotianshi',
-        colorClass: 'home-link'
-      },
 
-    ]
-  },
-  {
-    name: i18n.friend,
-    path: '/friend',
-    icon: 'icon-tuandui',
-    colorClass: 'home-link'
-  },
-  {
-    name: i18n.aboutBlog,
-    path: '/about',
-    icon: 'icon-tishi1',
-    colorClass: 'about-link',
-    children: [
-      {
-        name: i18n.about,
-        path: '/about',
-        icon: 'icon-geren',
-        colorClass: 'about-me'
-      },
-      {
-        name: i18n.linkMe,
-        path: '/chat/linkme',
-        icon: 'icon-fasong',
-        colorClass: 'about-link-me'
-      },
-      {
-        name: i18n.backManagement,
-        path: 'https://blog.yeling.top/',
-        icon: 'icon-diannao',
-        colorClass: 'admin-link',
-        external: true
-      },
-      {
-        name: i18n.openSource,
-        path: 'https://github.com/yelingzi/Yelingzi-Blog',
-        icon: 'icon-github',
-        colorClass: 'admin-link',
-        external: true
-      }
-    ]
-  }
-])
+const t = (key: string) => {
+  return useI18n.currentConfig[key] || key
+}
+// 定义菜单项
+const menuItems = computed<MenuItem[]>(() => {
+
+  return [
+    {
+      name: t('home'),
+      path: '/',
+      icon: 'icon-zhuye',
+      colorClass: 'home-link'
+    },
+    {
+      name: t('article'),
+      path: '/archive',
+      icon: 'icon-shu',
+      colorClass: 'archive-link',
+      children: [
+        {
+          name: t('archive'),
+          path: '/archive',
+          icon: 'icon-jishi',
+          colorClass: 'clock-link'
+        },
+        {
+          name: t('category'),
+          path: '/category',
+          icon: 'icon-fenlei',
+          colorClass: 'category-link'
+        },
+        {
+          name: t('tag'),
+          path: '/tag',
+          icon: 'icon-biaoqian',
+          colorClass: 'tag-link'
+        }
+      ]
+    },
+    {
+      name: t('talk'),
+      path: '/talks',
+      icon: 'icon-xiaoxi',
+      colorClass: 'talk-link'
+    },
+    {
+      name: t('album'),
+      path: '/album',
+      icon: 'icon-zhaopian',
+      colorClass: 'photos-link'
+    },
+    {
+      name: t('messageBorad'),
+      path: '/message',
+      icon: 'icon-xinfeng',
+      colorClass: 'message-link',
+      children: [
+        {
+          name: t('linkMe'),
+          path: '/chat/linkme',
+          icon: 'icon-fasong',
+          colorClass: 'about-link-me'
+        },
+        {
+          name: t('chatRoom'),
+          path: '/chat/chatroom',
+          icon: 'icon-liaotianshi',
+          colorClass: 'home-link'
+        },
+      ]
+    },
+    {
+      name: t('friend'),
+      path: '/friend',
+      icon: 'icon-tuandui',
+      colorClass: 'home-link'
+    },
+    {
+      name: t('aboutBlog'),
+      path: '/about',
+      icon: 'icon-tishi1',
+      colorClass: 'about-link',
+      children: [
+        {
+          name: t('about'),
+          path: '/about',
+          icon: 'icon-geren',
+          colorClass: 'about-me'
+        },
+        {
+          name: t('backManagement'),
+          path: 'https://blog.yeling.top/',
+          icon: 'icon-diannao',
+          colorClass: 'admin-link',
+          external: true
+        },
+        {
+          name: t('openSource'),
+          path: 'https://github.com/yelingzi/Yelingzi-Blog',
+          icon: 'icon-github',
+          colorClass: 'admin-link',
+          external: true
+        }
+      ]
+    }
+  ]
+})
 
 const currentLangList = ref([
-  { id: 'zh-CN', text: '中文' },
+  { id: 'zh-CN', text: '简体中文' },
   { id: 'en-US', text: 'English' }
 ])
 
 // 计算属性
 const filteredMenuItems = computed(() =>
-  menuItems.map(item => ({
+  menuItems.value.map(item => ({
     ...item,
     path:
       item.children && item.children.length && item.path === ''
@@ -370,11 +385,14 @@ const handleMouseEnterUser = () => {
   isDropdownOpenUser.value = true;
 }
 
-const handleI18n = async (local: string) => {
-  useI18n.loadLang(local)
-  await nextTick()
-  window.location.reload();
+const handleSwitch = async (lang: string) => {
+  await handleI18n(lang)
 }
+
+useLangChange(() => {
+  // 当语言变化时，这里会重新执行
+  console.log('语言已切换至', useI18n.currentLang)
+})
 
 // 生命周期
 onMounted(() => {

@@ -46,11 +46,11 @@
     </div>
   </div>
   <div class="pagination">
-    <proButton v-if="loadingArticle" v-loading.fullscreen.lock="loading" :info="i18n.loadMore + '...'" width="120px"
+    <proButton v-if="loadingArticle" v-loading.fullscreen.lock="loading" :info="t('loadMore') + '...'" width="120px"
       before="#ed6ea0" after="#9cd0ed" @click="nextPage">
     </proButton>
     <el-card v-else style="width: 100%;">
-      <div style="text-align: center;">{{ i18n.loadEnd }}</div>
+      <div style="text-align: center;">{{ t('loadEnd') }}</div>
     </el-card>
   </div>
 </template>
@@ -63,16 +63,17 @@ import { formatDate } from '@/utils/common';
 import type { Article, ArticleList, Category, Tag } from '@/types/article';
 import { getArticleListByPageService } from '@/api/article';
 import { useRouter } from 'vue-router';
-import { useI18nStore, useBlogStore } from '@/stores';
-
+import { useBlogStore } from '@/stores';
+import { t } from '@/utils/i18n'
 const router = useRouter()
 const loading = ref(false)
-const i18n = useI18nStore().currentConfig
 const total = ref(0)
 const page = ref(1)
 const pageSize = ref(5)
 const loadingArticle = ref(true)
 const articleList = ref<Article[]>([]);
+
+
 
 const getArticle = async () => {
 

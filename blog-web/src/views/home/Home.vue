@@ -8,7 +8,8 @@
     <Brand></Brand>
 
     <div class="bg">
-      <div class="main-container mt">
+      <div class="header"></div>
+      <div class="main-container">
         <div class="left-container" :class="isMobi ? 'test' : ''">
           <!-- 说说 -->
           <Talk></Talk>
@@ -50,17 +51,21 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.mt {
-  padding-top: 3rem;
+.home-warp {
+  /* 移除 padding-top */
+  box-sizing: border-box;
 }
 
-.right-container {
-  position: sticky;
-  width: 18rem;
-  margin-left: 0.8rem;
-  top: 20px;
-  align-self: flex-start;
-  transition: all 0.2s ease;
+.bg {
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  transition: margin-top 0.3s ease;
+  background-color: var(--grey-1);
+}
+
+.header {
+  height: 60px;
 }
 
 .main-container {
@@ -74,15 +79,41 @@ onUnmounted(() => {
   animation: slideUpIn 1s;
 }
 
-// 移动端适配
-@media (max-width: 768px) {
+.left-container {
+  width: calc(100% - 18.75rem);
+  transition: all 0.3s;
+}
+
+.right-container {
+  position: sticky;
+  width: 18rem;
+  margin-left: 0.8rem;
+  top: 20px;
+  align-self: flex-start;
+  transition: all 0.2s ease;
+}
+
+/* 移动端适配 */
+@media (max-width: 767px) {
+  .bg {
+    margin-top: 60vh;
+  }
+
+  .main-container {
+    width: 100%;
+    padding: 0 15px;
+    flex-direction: column;
+  }
+
+  .left-container {
+    width: 100%;
+  }
+
   .right-container {
     width: 100%;
     margin-left: 0;
-
-    &.fixed-sidebar {
-      right: 0;
-    }
+    margin-top: 20px;
+    position: static;
   }
 }
 </style>

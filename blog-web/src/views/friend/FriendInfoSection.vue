@@ -2,7 +2,7 @@
   <div class="message-container">
     <div class="header">
       <div>{{ props.title }}</div>
-      <div v-if="isCopy" class="copy-btn pointer" @click="copyItems">{{ i18n.copy }}</div>
+      <div v-if="isCopy" class="copy-btn pointer" @click="copyItems">{{ t('copy') }}</div>
     </div>
     <div class="main">
       <div class="blockquote">
@@ -21,7 +21,7 @@
 import { ElMessage } from 'element-plus'
 import { useI18nStore } from '@/stores'
 
-const i18n = useI18nStore().currentConfig
+import { t } from '@/utils/i18n'
 const props = defineProps(['items', 'title', 'isCopy'])
 
 const copyItems = async () => {

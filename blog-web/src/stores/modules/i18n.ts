@@ -7,34 +7,79 @@ export const useI18nStore = defineStore(
   'i18n',
   () => {
     // 状态定义
-    const currentLang = ref('zh-CN') // 修正语言代码为标准写法 zh-CN
-    const configs = ref<Record<string, LocalConfig>>({}) // 存储多语言配置的键值对
+    const currentLang = ref('zh-CN')
+    const configs = ref<Record<string, LocalConfig>>({})
     const isLangLoaded = ref(false)
+    const isLoading = ref(false)
+    const error = ref<string | null>(null)
 
-    // 操作方法
-    const loadLang = async (lang: string) => {
+    // 初始化应用语言
+    const initAppLang = async () => {
+      try {
+        isLoading.value = true
+        error.value = null
 
-      const finalLang = lang || 'zh-CN'
+        // 从本地存储获取上次使用的语言
+        const savedLang = localStorage.getItem('preferred_lang') || 'zh-CN'
 
-      // 版本比对：缓存版本 ≠ 当前版本 → 强制重载
-      const cachedVersion = localStorage.getItem(LANG_VERSION_KEY)
-      const needReload = !configs.value[finalLang] || cachedVersion !== LANG_VERSION
+        // 加载语言
+        await loadLang(savedLang)
 
-      if (needReload) {
-        try {
-          const module = await import(`@/assets/locales/${finalLang}.json`)
-          configs.value[finalLang] = module.default
-          localStorage.setItem(LANG_VERSION_KEY, LANG_VERSION) // 更新版本
-        } catch (e) {
-          console.error(`[i18n] failed to load lang: ${finalLang}`, e)
-          throw new Error(`Language ${finalLang} not available`)
-        }
+        isLangLoaded.value = true
+      } catch (err) {
+        error.value = `初始化语言失败: ${err instanceof Error ? err.message : String(err)}`
+        console.error(error.value)
+      } finally {
+        isLoading.value = false
       }
-
-      currentLang.value = finalLang
     }
 
-    // Getter 风格的计算属性
+    // 加载语言
+    const loadLang = async (lang: string) => {
+      try {
+        isLoading.value = true
+        error.value = null
+
+        const finalLang = lang || 'zh-CN'
+        const cachedVersion = localStorage.getItem(LANG_VERSION_KEY)
+
+        // 检查是否需要重新加载
+        const needReload = !configs.value[finalLang] || cachedVersion !== LANG_VERSION
+
+        if (needReload) {
+          // 动态导入语言文件
+          const module = await import(`@/assets/locales/${finalLang}.json`)
+          configs.value[finalLang] = module.default
+
+          // 更新版本信息
+          localStorage.setItem(LANG_VERSION_KEY, LANG_VERSION)
+        }
+
+        // 更新当前语言
+        currentLang.value = finalLang
+        localStorage.setItem('preferred_lang', finalLang)
+
+        return true
+      } catch (err) {
+        error.value = `加载语言失败: ${err instanceof Error ? err.message : String(err)}`
+        console.error(error.value)
+        return false
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    // 切换语言
+    const switchLang = async (lang: string) => {
+      const success = await loadLang(lang)
+      if (success) {
+        // 通知应用语言已切换
+        window.dispatchEvent(new CustomEvent('lang-changed', { detail: lang }))
+      }
+      return success
+    }
+
+    // 计算属性
     const currentConfig = computed(() => {
       return configs.value[currentLang.value] || {}
     })
@@ -44,9 +89,13 @@ export const useI18nStore = defineStore(
       currentLang,
       configs,
       isLangLoaded,
+      isLoading,
+      error,
 
       // 方法
+      initAppLang,
       loadLang,
+      switchLang,
 
       // 计算属性
       currentConfig
@@ -54,9 +103,9 @@ export const useI18nStore = defineStore(
   },
   {
     persist: {
-      key: 'store-key',
+      key: 'i18n_store',
       storage: localStorage,
-      pick: ['currentLang'],
+      pick: ['currentLang', 'configs'], // 保存语言和配置
     }
   }
 )

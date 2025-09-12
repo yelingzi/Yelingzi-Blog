@@ -1,7 +1,7 @@
 <template>
   <div class="talk-swiper" v-if="talkList.length > 0">
     <SvgIcon name="icon-xiaoxi" size="16" class="talk-icon"></SvgIcon>
-    <span class="talk-text">{{ i18n.talk }}</span>
+    <span class="talk-text">{{ t('talk') }}</span>
     <el-carousel class="swiper-container" arrow="never" direction="vertical">
       <el-carousel-item v-for="(talk, index) in talkList" :key="index" @click="toTalk(talk.id)">
         <div class="slide-content pointer">{{ talk.content }}</div>
@@ -19,7 +19,7 @@ import type { SimpleTalk } from '@/types/talk';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18nStore } from '@/stores';
-const i18n = useI18nStore().currentConfig
+import { t } from '@/utils/i18n'
 const router = useRouter()
 const talkList = ref<SimpleTalk[]>([]);
 

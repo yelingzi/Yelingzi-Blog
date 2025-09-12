@@ -15,6 +15,7 @@ import '@/assets/iconfont/iconfont.js'
 
 
 import { createPersistedState } from 'pinia-plugin-persistedstate'
+import { useI18nStore } from './stores'
 const loading = document.getElementById('Loading');
 if (loading) loading.style.display = 'flex';
 
@@ -32,6 +33,9 @@ app.use(ElementPlus, {
   locale: zhCn,
 })
 app.use(Vue3DraggableResizable)
+
+const i18nStore = useI18nStore()
+await i18nStore.initAppLang()
 
 app.mount('#app')
 

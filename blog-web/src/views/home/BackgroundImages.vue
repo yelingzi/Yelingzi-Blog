@@ -19,13 +19,7 @@ import { getBgListService } from '@/api/album';
  * 轮播图
  */
 interface Carousel {
-  /**
-   * 主键
-   */
   id: number;
-  /**
-   * 轮播图地址
-   */
   url: string;
 }
 const carouselList = ref<Carousel[]>([]);
@@ -48,7 +42,7 @@ onMounted(() => {
   top: 0;
   left: 0;
   width: 100%;
-  height: 80vh;
+  height: 70vh;
   z-index: -9;
   background-color: #363636;
   overflow: hidden;

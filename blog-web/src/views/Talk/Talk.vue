@@ -1,5 +1,5 @@
 <template>
-  <CommonLayout :title="i18n.talk" :bgImg="bgImg" />
+  <CommonLayout :title="t('talk')" :bgImg="bgImg" />
   <div class="bg">
     <div class="page-container">
       <div class="talk-item">
@@ -40,8 +40,8 @@
 import bgImg from '@/assets/images/bg-article.jpg'
 import type { Talk } from "@/types/talk";
 import { getDateDiff, numberToBoolean } from "@/utils/common"
-import { computed, onMounted, defineAsyncComponent, ref } from "vue";
-import { useUserStore, useI18nStore } from "@/stores";
+import { onMounted, defineAsyncComponent, ref } from "vue";
+import { useUserStore } from "@/stores";
 import Comment from '@/components/Comment/Comment.vue';
 import CommonLayout from '../Layout/CommonLayout.vue';
 import ImageList from '@/components/Image/ImageList.vue';
@@ -50,7 +50,7 @@ import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 
 const router = useRouter()
-const i18n = useI18nStore().currentConfig
+import { t } from '@/utils/i18n'
 const badgeIcon = defineAsyncComponent(() =>
   import('@/assets/icons/badge.svg')
 );

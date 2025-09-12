@@ -17,11 +17,11 @@
             <div class="chat-record-text user-select" v-if="chat.messageType === 'text'">{{ chat.message }}</div>
           </div>
 
-          <el-avatar class="chat-record-avatar" :src="chat.userAvatar"></el-avatar>
+          <YlAvatar class="chat-record-avatar" :src="chat.userAvatar"></YlAvatar>
         </div>
         <!-- 其他人消息，显示在左边 -->
         <div class="chat-record-left" v-else>
-          <el-avatar class="chat-record-avatar" :src="chat.userAvatar"></el-avatar>
+          <YlAvatar class="chat-record-avatar" :src="chat.userAvatar"></YlAvatar>
           <div class="chat-record-content">
             <div class="chat-record-nickname">{{ chat.nickname }}</div>
             <div class="chat-record-text user-select" v-if="chat.messageType === 'text'">{{ chat.message }}</div>
@@ -37,6 +37,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch, type PropType }
 import type { ChatMessage } from '@/types/chatType'
 import { useUserStore } from '@/stores'
 import { formatChatDisplayTime } from '@/utils/common'
+import YlAvatar from '@/components/Image/YlAvatar.vue'
 
 const userState = useUserStore()
 const userInfo = userState.getUserState()
