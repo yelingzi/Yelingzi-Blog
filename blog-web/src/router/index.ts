@@ -1,229 +1,131 @@
-import { createRouter, createWebHistory } from 'vue-router'
+// router/index.ts
+import { useUserStore } from '@/stores';
+import type { MenuList } from '@/type/user';
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
-import Layout from '@/components/Layout/Layout.vue'
-import FixedLayout from '@/components/Layout/FixedLayout.vue'
-import Home from '@/views/home/Home.vue'
-import TalkList from '@/views/Talk/TalkList.vue'
-import Archive from '@/views/archive/Archive.vue'
-
-/**
- *  @description: 路由对象参数说明
- *  path: 路由路径，必填
- *  name: 路由名称，必填
- *  meta: 路由元信息，必填
- *  meta.title: 路由标题，必填
- *  meta.img: 路由图片，非必填 优先级 1
- *  meta.textIcon: 路由文字图标，非必填 优先级 2
- *  meta.icon: 路由图标，非必填 优先级 3
- *  meta.isHidden: 是否隐藏路由，非必填 默认 false
- *  component: 路由组件，必填
- *  redirect: 重定向，非必填
- *  children: 子路由，非必填
- */
-const route = [
-  {
-    path: '',
-    name: 'home',
-    meta: {
-      title: '首页',
-    },
-    component: Home,
-  },
-  {
-    path: '/article/:id',
-    name: 'article',
-    component: () => import('@/views/article/Article.vue'),
-    meta: {
-      title: '文章',
-    },
-    props: true,
-  },
-  {
-    name: 'talks',
-    path: '/talks',
-    component: TalkList,
-    meta: {
-      title: '说说列表',
-    },
-  },
-  {
-    name: 'talk',
-    path: '/talk/:id',
-    component: () => import('@/views/Talk/Talk.vue'),
-    meta: {
-      title: '说说',
-    },
-    props: true,
-  },
-  {
-    name: 'album',
-    path: '/album',
-    component: () => import('@/views/album/album.vue'),
-    meta: {
-      title: '相册',
-    },
-  },
-  {
-    name: 'albumById',
-    path: '/albums/:id',
-    component: () => import('@/views/album/photos.vue'),
-    meta: {
-      title: '相册',
-    },
-    props: true,
-  },
-  {
-    path: '/archive',
-    name: 'Archive',
-    component: Archive,
-    meta: {
-      title: '归档',
-    },
-  },
-  {
-    name: 'category',
-    path: '/category',
-    component: () => import('@/views/Category/Category.vue'),
-  },
-  {
-    name: 'tag',
-    path: '/tag',
-    component: () => import('@/views/Tag/TagCloud.vue'),
-    props: true,
-  },
-  {
-    path: '/friend',
-    name: 'Friend',
-    component: () => import('@/views/friend/Friend.vue'),
-    meta: {
-      title: '友链',
-    },
-  },
-  {
-    path: '/about',
-    name: 'about',
-    component: () => import('@/views/about/About.vue'),
-    meta: {
-      title: '关于',
-    },
-  },
-
-  {
-    path: '/user',
-    name: 'user',
-    component: () => import('@/views/user/user.vue'),
-    redirect: '/user/info',
-    children: [
-      {
-        path: '/user/info',
-        name: 'userInfo',
-        component: () => import('@/views/user/userInfo.vue'),
-        meta: {
-          title: '个人信息',
-        },
-      },
-    ],
-  },
-]
-
-const fixedRoute = [
-  {
-    name: 'login',
-    path: '/login',
-    component: () => import('@/views/Login/Layout.vue'),
-    meta: {
-      title: '登录',
-    },
-  },
-  {
-    name: 'forget',
-    path: '/login/forget',
-    component: () => import('@/views/Login/Forget.vue'),
-    meta: {
-      title: '忘记密码',
-    },
-  },
-  {
-    path: '/chat/:chatType',
-    name: 'chat',
-    component: () => import('@/views/chat/ChatLayout.vue'),
-    meta: {
-      title: '聊天',
-    },
-    props: true
-  },
-  {
-    path: '/chat',
-    name: 'chat-empty',
-    component: () => import('@/views/chat/ChatLayout.vue'),
-    meta: {
-      title: '聊天',
-    },
-    props: true
-  },
-  {
-    path: '/message',
-    name: 'Message',
-    component: () => import('@/views/message/message.vue'),
-    meta: {
-      title: '留言',
-    },
-  },
-  {
-    path: '/link/message',
-    name: 'LinkMe',
-    component: () => import('@/views/message/linkMe.vue'),
-    meta: {
-      title: '联系我',
-    },
-  },
-  {
-    path: '/chatai/:sessionId',
-    name: 'chatai',
-    component: () => import('@/views/chatai/ChatAILayout.vue'),
-    meta: {
-      title: 'AI对话',
-    },
-    props: true
-  },
-  {
-    path: '/chatai',
-    name: 'chatai-empty',
-    component: () => import('@/views/chatai/ChatAILayout.vue'),
-    meta: { title: 'AI对话' }
-  },
-]
-
-// createRouter 创建路由实例
-//配置 history 模式
-// 1. history模式  createWebHistory  地址栏不带#
-// 2. hash模式  createWebHashHistory  地址栏带#
-// vite 中的环境变量 import.meta.env.BASE_URL  就是 vite.config.js 中的 base 配置项
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
+      path: '/layout',
       name: 'layout',
-      component: Layout,
-      children: [...route],
+      component: () => import('@/Layout/layout.vue'),
+      children: []
     },
     {
-      path: '/fixedlayout',
-      name: 'fixedlayout',
-      component: FixedLayout,
-      children: [...fixedRoute]
+      path: '/',
+      component: () => import('@/Layout/check.vue')
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/login/login.vue')
     },
     {
       path: "/404",
-      component: () => import("@/views/error/error404.vue"),
+      component: () => import("@/views/error/notFound.vue"),
+    },
+    {
+      path: "/error",
+      component: () => import("@/views/error/error.vue"),
     },
     { path: "/:catchAll(.*)", redirect: "/404" },
-    {
-      path: "/test",
-      component: () => import("@/views/test.vue"),
-    },
   ],
+})
+
+let isRoutesInjected = false
+
+export const injectDynamicRoutes = (menuList: MenuList[]) => {
+  if (isRoutesInjected) return
+
+  // 清理旧路由
+  const layout = router.getRoutes().find(r => r.name === 'layout')
+  layout?.children?.forEach(child => {
+    if (child.meta?.isDynamic) {
+      router.removeRoute(child.name!)
+    }
+  })
+
+  // 递归处理菜单
+  const processMenu = (menus: MenuList[]) => {
+    menus.forEach(menu => {
+      if (menu.children?.length) processMenu(menu.children)
+
+      // 过滤有效路由项
+      if (menu.menuType !== 2 || !menu.path || !menu.component) return
+
+      // 创建唯一路由名称
+      const routeName = `dynamic_${menu.id}`
+
+      // 配置路由记录
+      const route: RouteRecordRaw = {
+        path: menu.path,
+        name: routeName,
+        component: resolveComponent(menu.component),
+        meta: {
+          menuId: menu.id,
+          isDynamic: true,
+          name: menu.menuName,
+        },
+        props: menu.path == '/chat/:chatId' ? true : false
+      }
+
+      // 防止重复添加
+      if (!router.hasRoute(routeName)) {
+        router.addRoute('layout', route)
+      }
+    })
+  }
+
+  processMenu(menuList)
+
+  isRoutesInjected = true
+}
+
+// 增强版组件解析方法
+const resolveComponent = (component: string) => {
+  // 统一路径格式
+  const normalized = component
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '')
+    .replace(/\.vue$/, '')
+
+  // 尝试多种文件组织方式
+  const pathVariants = [
+    `/src/views/${normalized}.vue`,
+    `/src/views/${normalized}/index.vue`,
+    `/src/views/${normalized}View.vue`
+  ]
+
+  // 匹配模块
+  const modules = import.meta.glob('@/views/**/*.vue')
+  for (const path of pathVariants) {
+    if (modules[path]) {
+      return modules[path]
+    }
+  }
+
+  console.error('❌ 组件解析失败，原始路径:', component)
+  return () => import('@/views/error/notFound.vue')
+}
+
+//路由守卫
+router.beforeEach(async (to) => {
+  const userStore = useUserStore()
+
+  if (to.meta.requiresAuth && !userStore.isLogin) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+
+  if (userStore.isLogin && !isRoutesInjected) {
+    injectDynamicRoutes(userStore.menuList)
+    isRoutesInjected = true
+  }
+
+  if (userStore.isLogin && to.path == '/login') {
+    return { path: '/' }
+  }
+
 })
 
 export default router

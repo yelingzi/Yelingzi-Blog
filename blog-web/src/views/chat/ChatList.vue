@@ -1,7 +1,7 @@
 <template>
-  <div v-for="chat in chatStore.chatList" class="chat-list pointer" @click="pushChating(chat)" :key="chat.id"
+  <div v-for="chat in chatStore.chatList" class="chat-list" @click="pushChating(chat)" :key="chat.id"
     :class="{ active: chat.id === props.currentChatId }">
-    <el-avatar :src="chat.avatar"></el-avatar>
+    <yl-avatar :src="chat.avatar"></yl-avatar>
     <div class="chat-content">
       <div class="chat-info">
         <div class="chat-name">{{ chat.nickname }}</div>
@@ -29,10 +29,12 @@
 </template>
 
 <script lang="ts" setup>
-import type { Chat } from '@/types/chatType';
+import type { Chat } from '@/type/chatType';
 import { useChatStore } from '@/stores/modules/chat'
 import { useRouter } from 'vue-router';
-import { formatChatListDisplayTime } from '@/utils/common'
+import { formatChatListDisplayTime } from '@/utils/commom'
+import { useUserStore } from '@/stores';
+import YlAvatar from '@/components/Image/YlAvatar.vue';
 
 const props = defineProps({
   currentChatId: {
@@ -42,9 +44,10 @@ const props = defineProps({
 })
 const router = useRouter()
 const chatStore = useChatStore()
+const userStore = useUserStore()
 
 const pushChating = (chat: Chat) => {
-  router.push({ name: 'chat', params: { chatType: chat.route } })
+    router.push({ name: 'dynamic_36', params: { chatId: chat.route } })
 }
 </script>
 
@@ -70,11 +73,11 @@ const pushChating = (chat: Chat) => {
   }
 
   &:hover {
-    background-color: var(--hover-secondary);
+    background-color: #f3f3f3;
   }
 
   &.active {
-    background-color: var(--el-color-primary-light-9);
+    background-color: var(--el-color-primary-light-9); // 主题色浅色背景
     color: var(--el-color-primary);
   }
 

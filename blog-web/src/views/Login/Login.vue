@@ -1,288 +1,238 @@
 <template>
-  <div class="container">
-    <div class="header">
-      <h1 class="form-title">登录</h1>
-      <div class="to-reg pointer" @click="emit('toRegist')">去注册</div>
-    </div>
-    <el-form :model="form" :rules="rules" ref="loginForm" size="large">
-
-      <el-form-item prop="email">
-        <el-input v-model="form.email" placeholder="邮箱"></el-input>
-      </el-form-item>
-
-      <el-form-item prop="password">
-        <el-input v-model="form.password" type="password" show-password placeholder="密码"></el-input>
-      </el-form-item>
-      <el-form-item prop="verifyCode">
-        <div class="myCenter form-input">
-          <el-input v-model="form.verifyCode" placeholder="请输入验证码" class="input-flex"></el-input>
-          <div @click="getVerifyCode()" class="button-vc">
-            <el-tooltip effect="dark" content="点击刷新" placement="bottom" hide-after="0">
-              <el-image :src="verifyCodeUrl" class="image"></el-image>
-            </el-tooltip>
-          </div>
+    <div class="login-wrapper">
+        <div class="form-wrap">
+            <el-row>
+                <el-col :span="13">
+                    <el-image :src="image" fit="cover" />
+                </el-col>
+                <el-col :span="11" class="form-col">
+                    <div class="form-container">
+                        <el-form :model="form" :rules="rules" ref="loginForm" size="large">
+                            <h1 class="form-title">叶玲子的博客后台</h1>
+                            <el-form-item prop="email">
+                                <el-input class="form-input" v-model="form.email" placeholder="邮箱" />
+                            </el-form-item>
+                            <el-form-item prop="password">
+                                <el-input class="form-input" v-model="form.password" type="password" show-password
+                                    placeholder="密码" />
+                            </el-form-item>
+                            <el-form-item prop="verifyCode">
+                                <div class="input-button-container form-input">
+                                    <el-input v-model="form.verifyCode" placeholder="请输入验证码"
+                                        class="input-flex"></el-input>
+                                    <div @click="getVerifyCode()" class="button-vc">
+                                        <el-tooltip effect="dark" content="点击刷新" placement="bottom" hide-after="0">
+                                            <el-image :src="verifyCodeUrl" class="image"></el-image>
+                                        </el-tooltip>
+                                    </div>
+                                </div>
+                            </el-form-item>
+                            <el-form-item class="btn-container">
+                                <el-button type="primary" @click="login">登录</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </el-col>
+            </el-row>
         </div>
-      </el-form-item>
-
-    </el-form>
-
-    <div class="code-login" :class="{ 'coding-login': !isPasswordLogin }">
-      <el-form :model="form" :rules="rules" ref="loginForm" size="large">
-        <el-form-item prop="email">
-          <el-input v-model="form.email" placeholder="邮箱"></el-input>
-        </el-form-item>
-        <el-form-item prop="verifyCode">
-          <div class="myCenter form-input">
-            <el-input v-model="form.verifyCode" placeholder="请输入验证码" class="input-flex"></el-input>
-            <div @click="getMailVerifyCode()" :disabled="isCounting" class="button-vc input-flex myCenter pointer">
-              {{ isCounting ? `${countdown}秒后重新发送` : '发送验证码' }}
-            </div>
-          </div>
-        </el-form-item>
-      </el-form>
     </div>
-
-
-
-    <el-form-item>
-      <el-button class="form-button-login" @click="handleLogin()">登录</el-button>
-    </el-form-item>
-    <el-form-item>
-      <div class="form-button pointer" href="#" @click="isPasswordLogin = !isPasswordLogin">
-        {{ isPasswordLogin ? '验证码登录' : '密码登录' }}
-      </div>
-      <div class="forget pointer" @click="router.push('/login/forget')">忘记密码？</div>
-    </el-form-item>
-
-  </div>
-
 
 </template>
 
-<script lang="ts" setup>
-import { getLoginEmailVerifyCodeService, getVerifyCodeService, userInfoService, userLoginService, userVerifyCodeLoginService } from '@/api/login';
-import { useUserStore } from '@/stores';
-import { ElMessage, type FormInstance } from 'element-plus';
-import { Md5 } from 'ts-md5';
-import { onMounted, reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+<script setup lang="ts">
+import { reactive, ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, type FormInstance } from 'element-plus'
+import { Md5 } from 'ts-md5'
+import { useUserStore } from '@/stores'
+import { injectDynamicRoutes } from '@/router'
+import {
+    getVerifyCodeService,
+    userInfoService,
+    userLoginService,
+    userMenuListService
+} from '@/api/login'
+import image from '@/assets/images/1.jpg'
 
-const userStore = useUserStore()
+/* ----------------  数据  ---------------- */
 const router = useRouter()
+const userStore = useUserStore()
 const loginForm = ref<FormInstance>()
-const form = reactive({
-  email: '',
-  password: '',
-  verifyCode: ''
-})
-const isCounting = ref(false)
-const countdown = ref(0)
-const isPasswordLogin = ref(true)
-const emit = defineEmits(['toRegist'])
-const rules = {
-  email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '邮箱格式不正确', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { pattern: /^\S{6,32}$/, message: '6-32 位非空字符', trigger: 'blur' }
-  ],
-  verifyCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
-}
 
-/* 验证码图片 */
+const form = reactive({
+    email: '123456@123456.com',
+    password: '123456',
+    verifyCode: ''
+})
+
 const verifyCodeKey = ref('')
 const verifyCodeUrl = ref('')
-const getVerifyCode = async () => {
-  const res = await getVerifyCodeService()
-  verifyCodeKey.value = res.data.data.key
-  verifyCodeUrl.value = res.data.data.image
+
+/* --------------  校验规则  -------------- */
+const rules = {
+    email: [
+        { required: true, message: '请输入邮箱', trigger: 'blur' },
+        { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: '邮箱格式不正确', trigger: 'blur' }
+    ],
+    password: [
+        { required: true, message: '请输入密码', trigger: 'blur' },
+        { pattern: /^\S{6,15}$/, message: '密码必须是 6-15 位的非空字符', trigger: 'blur' }
+    ],
+    verifyCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
 }
-/* ---------- 工具函数 ---------- */
+
+/* --------------  计算属性  -------------- */
+const canSubmit = computed(() => form.email && form.password && form.verifyCode)
+
+/* --------------  方法  -------------- */
 const encrypt = (v: string) => Md5.hashStr(v).toString()
 
-const startCountdown = () => {
-  isCounting.value = true
-  countdown.value = 120
-  const t = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0) {
-      clearInterval(t)
-      isCounting.value = false
+async function login() {
+    try {
+        await loginForm.value?.validate()
+    } catch {
+        ElMessage.error('请完善表单后再提交')
+        return
     }
-  }, 1000)
+
+    try {
+        const { data } = await userLoginService({
+            email: form.email,
+            password: encrypt(form.password),
+            verifyCodeKey: verifyCodeKey.value,
+            verifyCode: form.verifyCode
+        })
+
+        await loginSuccess(data.data) // 存储用户信息 & 跳首页
+        ElMessage.success('登录成功')
+        resetForm()
+    } catch (e: any) {
+        ElMessage.error(e?.response?.data?.message || '登录失败')
+        getVerifyCode() // 刷新验证码
+    }
 }
 
-/* 发送邮箱验证码 */
-const getMailVerifyCode = async () => {
-  if (isCounting.value) return
+async function loginSuccess(token: any) {
+    userStore.setTokens(token.accessToken, token.refreshToken)
 
-  try {
-    await loginForm.value?.validateField('email')
-  } catch {
-    ElMessage.error('请完善表单后再提交')
-    return
-  }
-  await getLoginEmailVerifyCodeService({ email: form.email })
+    const [{ data: userRes }, { data: menuRes }] = await Promise.all([
+        userInfoService(),
+        userMenuListService()
+    ])
 
+    userStore.setUserState({ ...userRes.data, login: true })
+    userStore.setMenuList(menuRes.data)
+    injectDynamicRoutes(menuRes.data)
 
-  ElMessage.success('验证码已发送')
-  startCountdown()
-
+    await router.replace('/home')
 }
 
-/* 登录 */
-const handleLogin = async () => {
-  try {
-    await loginForm.value?.validate()
-  } catch {
-    ElMessage.error('请完善表单后再提交')
-    return
-  }
-
-  try {
-    const api = isPasswordLogin.value
-      ? userLoginService
-      : userVerifyCodeLoginService
-
-    const res = await api({
-      email: form.email,
-      password: isPasswordLogin.value ? encrypt(form.password) : '',
-      verifyCodeKey: verifyCodeKey.value,
-      verifyCode: form.verifyCode
+function resetForm() {
+    Object.assign(form, {
+        email: '123456@123456.com',
+        password: '123456',
+        verifyCode: ''
     })
-    await loginSuccess(res.data.data)
-    ElMessage.success('登录成功')
-    resetForm()
-    redirectAfterLogin()
-  } catch (e: any) {
-    form.verifyCode = ''
+}
+
+async function getVerifyCode() {
+    const res = await getVerifyCodeService()
+    verifyCodeKey.value = res.data.data.key
+    verifyCodeUrl.value = res.data.data.image
+}
+
+/* --------------  生命周期  -------------- */
+onMounted(() => { 
     getVerifyCode()
-  }
-}
-
-/* 登录成功后续 */
-const loginSuccess = async (token: { accessToken: string; refreshToken: string }) => {
-  userStore.setTokens(token.accessToken, token.refreshToken)
-  const { data: userRes } = await userInfoService()
-  userStore.setUserState({ ...userRes.data })
-}
-
-/* 跳转逻辑 */
-const redirectAfterLogin = () => {
-  const last = userStore.getLastShowWeb()
-  router.push(last && last !== '/login/forget' ? last : '/')
-}
-
-const resetForm = () => {
-  Object.assign(form, { email: '', password: '', repassword: '', verifyCode: '' })
-  getVerifyCode()
-}
-
-/* 生命周期 */
-onMounted(() => {
-  if (userStore.getIsLogin()) router.replace('/home')
-  getVerifyCode()
 })
 
 </script>
 
-
 <style lang="scss" scoped>
-.container {
-  width: 300px;
-  margin: 0 auto;
+.login-wrapper {
+    width: 99vw;
+    height: 98vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 3rem 0 1rem 0;
-}
+.form-wrap {
+    width: 900px;
+    height: 500px;
+    background-color: #eee;
+    border: #ddd 1px solid;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 15px 30px var(--grey-9-a1), 0 10px 10px var(--grey-9-a1);
+    position: relative;
+    overflow: hidden;
+    // 新增保持宽高比例
+    aspect-ratio: 16/9; // 根据你的设计比例调整
 
-.to-reg {
-  display: none;
+    // 添加响应式尺寸
+    @media (max-width: 900px) {
+        width: 95vw;
+        height: auto;
+        min-height: 300px;
+    }
+
+    .form-col {
+        display: flex;
+        align-items: center;
+        padding: 20px; // 添加内边距避免内容贴边
+    }
+
+    .form-container {
+        width: 100%; // 确保表单容器宽度填满
+        padding: 0 20px; // 添加左右内边距
+    }
+
+    .form-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 1.5rem;
+        color: #333;
+        width: 100%;
+    }
+
+    .form-input {
+        width: 100%; // 输入框宽度填满容器
+    }
+
+    .input-button-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .button-vc {
+        width: 134px;
+        height: 40px;
+        padding: 0px;
+        border-radius: 4px;
+        background-color: #FFF;
+    }
+
+    .btn-container {
+        :deep(.el-form-item__content) {
+            display: flex;
+            justify-content: center;
+        }
+
+        .el-button {
+            width: 100%; // 按钮宽度填满
+            max-width: 100px; // 设置最大宽度
+        }
+    }
 }
 
 .myCenter {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.form-title {
-  margin: 0 auto;
-}
-
-
-.form-button-login {
-  margin: 0 auto;
-  margin-top: 14px;
-  height: 40px;
-  width: 100px;
-}
-
-.form-container {
-  position: absolute;
-  height: 100%;
-
-  transition: all 0.5s ease-in-out;
-  background: var(--grey-0);
-  flex-direction: column;
-}
-
-.button-vc {
-  width: 120px;
-  height: 40px;
-  padding: 0px;
-  border-radius: 4px;
-  background-color: var(--color-blue);
-}
-
-.input-flex {
-  flex: 1;
-  margin-right: 10px;
-}
-
-.forget {
-  margin: 0 auto;
-
-  &:hover {
-    color: var(--color-blue);
-  }
-}
-
-.form-button {
-  margin: 0 auto;
-
-  &:hover {
-    color: var(--color-pink);
-  }
-}
-
-.code-login {
-  position: absolute;
-  top: 0;
-  transform: translateY(-700px);
-  height: 150px;
-  background: #FFF;
-  z-index: 100;
-  padding-top: 3rem;
-  width: 300px;
-  margin: 0 auto;
-  transition: all 0.6s ease;
-}
-
-.coding-login {
-  transform: translateY(100px);
-}
-
-@media (max-width: 767px) {
-  .to-reg {
-    display: block;
-  }
-
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%; // 添加高度保证垂直居中
 }
 </style>

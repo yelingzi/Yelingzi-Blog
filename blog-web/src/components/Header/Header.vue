@@ -1,250 +1,156 @@
 <template>
-  <div class="site-header" :class="{ 'flutter': isScrolled }">
-    <div class="navbar">
-      <!-- 移动端菜单按钮 -->
-      <button class="menu-btn" @click="handleOpenMobileMenu">
-        <SvgIcon name="icon-list" size="32" />
-      </button>
-      <div class="nav-left">
-        <div @click="router.push('/')" class="logo pointer" v-pio="{ text: `回到首页` }">
-          <img :src="blogInfo.logo">
-          <span class="logo-text">{{ t('blogName') }}</span>
+    <el-card class="header-container">
+        <div class="header-content">
+            <el-icon class="fold" :size="20">
+                <Fold />
+            </el-icon>
+            <el-breadcrumb separator="/" class="breadcrumb">
+                <el-breadcrumb-item v-for="(item, index) in breadcrumbs" :key="item.menuName"
+                    :to="index < breadcrumbs.length - 1 ? item.path : null">
+                    {{ item.menuName }}
+                </el-breadcrumb-item>
+            </el-breadcrumb>
+            <div class="right-content">
+               <HeaderRight></HeaderRight>
+            </div>
         </div>
-      </div>
-      <div class="nav-center">
-        <NavMenu />
-      </div>
-      <div class="nav-right">
-        <NavRight v-on:search="handleOpenSearch" />
-      </div>
-    </div>
-  </div>
-
-  <div class="mobile-menu-warp" :class="{ 'is-show-menu': isMobi }">
-    <MobilleMenu @close-menu="handleOpenMobileMenu"></MobilleMenu>
-  </div>
-
-  <div class="search-warp" :class="{ 'is-show-search': isShowSearch }">
-    <Search @close="handleCloseSearch" :show="isShowSearch"></Search>
-  </div>
-
+    </el-card>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useBlogStore } from '@/stores'
-import Search from '@/components/Search/Search.vue'
-import { t } from '@/utils/i18n'
-import NavMenu from './NavMenu.vue'
-import MobilleMenu from './MobilleMenu.vue'
-import NavRight from './NavRight.vue'
+import {  useUserStore } from '@/stores';
+import type { MenuList } from '@/type/user';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import HeaderRight from './HeaderRight.vue';
 
+const userStore = useUserStore()
+const route = useRoute()
 
-const router = useRouter()
-const blogStore = useBlogStore()
-const blogInfo = blogStore.blogInfo
-// 响应式数据
-const isScrolled = ref(false)
-const isShowSearch = ref(false)
-const isMobi = ref(false)
-
-
-const handleOpenMobileMenu = () => {
-  isMobi.value = !isMobi.value
+interface Breadcrumbs {
+    path: string,
+    menuName: string
 }
 
 
-const handleCloseSearch = () => {
-  isShowSearch.value = false
+// 安全获取第一个有效子路径
+const findFirstValidPath = (menus: MenuList[] | null | undefined): string | undefined => {
+    // 防御性编程：处理无效输入
+    if (!menus || !Array.isArray(menus)) return undefined
+
+    // 深度优先搜索有效路径
+    for (const menu of menus) {
+        // 优先返回当前菜单的有效路径
+        if (menu.path?.trim()) return menu.path
+
+        // 递归检查子菜单
+        if (menu.children?.length) {
+            const childPath = findFirstValidPath(menu.children)
+            if (childPath) return childPath
+        }
+    }
+
+    return undefined
 }
+// 动态生成面包屑
+const breadcrumbs = computed(() => {
+    const currentPath = route.path
+    const breadcrumbList: Breadcrumbs[] = []
 
-const handleOpenSearch = () => {
-  isShowSearch.value = true
-}
+    // 改进版路径匹配方法
+    const findBreadcrumb = (menus: MenuList[], targetPath: string): boolean => {
+        return menus.some(menu => {
+            // 处理父级菜单无路径的情况
+            let effectivePath = menu.path || ''
 
-const SCROLL_THRESHOLD = 200 // 滚动阈值
-const handleScroll = () => {
-  const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop
-  isScrolled.value = scrollTop > SCROLL_THRESHOLD
-}
+            // 路径匹配成功
+            if (effectivePath === targetPath) {
+                breadcrumbList.push({
+                    path: effectivePath,
+                    menuName: menu.menuName
+                })
+                return true
+            }
 
+            if (!effectivePath && menu.children) {
+                const firstValidChild = findFirstValidPath(menu.children)
+                effectivePath = firstValidChild || ''
+            }
 
-// 生命周期
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
+            // 递归查找子菜单
+            if (menu.children?.length) {
+                const found = findBreadcrumb(menu.children, targetPath)
+                if (found) {
+                    // 添加父级菜单项（带路径修正）
+                    breadcrumbList.push({
+                        path: effectivePath,
+                        menuName: menu.menuName
+                    })
+                    return true
+                }
+            }
+
+            return false
+        })
+    }
+
+    // 主匹配流程
+    if (findBreadcrumb(userStore.menuList, currentPath)) {
+        console.log(breadcrumbList)
+        return breadcrumbList.reverse()
+    }
+
+    // 备选方案：路径分段匹配
+    const pathSegments = currentPath.split('/').filter(Boolean)
+    return pathSegments.map((_, index) => {
+        const partialPath = '/' + pathSegments.slice(0, index + 1).join('/')
+        return {
+            path: partialPath,
+            menuName: pathSegments[index] || 'Home'
+        }
+    })
 })
 
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-})
+
 </script>
 
 <style lang="scss" scoped>
-@use '@/assets/styles/variables.scss' as *;
-
-//  ==========  工具类  ==========
-
-%glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px) saturate(180%);
-  -webkit-backdrop-filter: blur(10px) saturate(180%);
+.header-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box; 
+    
+    // 覆盖 Element Plus 默认样式
+    :deep(.el-card__body) {
+        padding: 10px 16px;
+        width: 100%;
+        display: flex;
+        box-sizing: border-box;
+    }
 }
 
-/*  ==========  header  ==========  */
-.site-header {
-  position: fixed;
-  inset: 0 0 auto;
-  z-index: $z-nav-header;
-  height: 70px;
-  padding: 0 30px;
-  border: 2px solid transparent;
-  border-color: var(--grey-9-a5);
-  @extend %glass;
-  transition:
-    transform $duration-slow ease,
-    border-radius $duration-slow ease,
-    border-color $duration-slow ease;
-  will-change: transform;
-  transform: translateY(20px) scale(0.95);
-  border-radius: $border-radius-md;
-
-}
-
-/*  滚动后的“卡片”状态  */
-.site-header.flutter {
-  transform: translateY(0) scale(1);
-  border-radius: 0;
-  border: 2px solid transparent;
-  border-top-color: var(--glass-bg);
-  border-left-color: var(--glass-bg);
-  border-right-color: var(--glass-bg);
-  border-bottom-color: var(--grey-9-a5);
-}
-
-.navbar {
-  padding: $spacing-sm 0 $spacing-sm 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.menu-btn {
-  visibility: hidden;
-  padding: $spacing-sm;
-  color: var(--color-black);
-  transition: color 0.3s ease;
-}
-
-.nav-left {
-  margin-right: 48px;
-}
-
-.logo {
-  display: inline-flex;
-  align-items: center;
-  gap: $spacing-sm;
-
-  [theme='dark'] .logo img {
-    filter: brightness(1) !important;
-  }
-
-  img {
-    height: 40px;
-    width: 40px;
-    border-radius: 4px;
-  }
-
-  .logo-text {
-    font-size: 1.2em;
-    font-weight: 700;
-    background: linear-gradient(135deg, $primary, $secondary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    max-width: 200px;
-    white-space: nowrap;
-  }
-
-}
-
-.nav-center {
-  display: flex;
-  gap: $spacing-md;
-  flex: 1;
-}
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  margin-left: auto;
-}
-
-@media (max-width: $bp-lg) {
-  .menu-btn {
-    visibility: visible;
-  }
-
-  .nav-left {
-
-    margin-left: 50px;
-  }
-
-  .nav-center {
-    display: none;
-  }
-
-}
-
-@media (max-width: $bp-md) {
-  .navbar {
-    position: relative;
+.header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-right: 0;
-  }
-
-  .nav-left {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    margin: 0;
-    width: auto;
-  }
-
-  .logo .logo-text {
-    font-size: 1.5em;
-  }
+    width: 100%;
+    min-width: 0;
 }
 
-.mobile-menu-warp,
-.search-warp {
-  position: fixed;
-  transition: all $duration-slow ease;
-  will-change: transform;
+.fold {
+    margin-right: 15px;
 }
 
-.search-warp {
-  inset: 0;
-  z-index: $z-modal-search;
-  background-color: transparent;
-  transform: translateY(-150%);
+.breadcrumb {
+    display: flex;
+    align-items: center;
 }
 
-.is-show-search {
-  transform: translateY(0) !important;
+.right-content {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
 }
 
-.mobile-menu-warp {
-  width: 320px;
-  height: 100vh;
-  right: 0;
-  z-index: $z-modal-drawer;
-  background-color: rgba(0, 0, 0, 0.5);
-  transform: translateX(100%);
-}
-
-.is-show-menu {
-  transform: translateX(0) !important;
-}
 </style>

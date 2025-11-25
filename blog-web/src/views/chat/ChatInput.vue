@@ -8,13 +8,11 @@
   <div class="input-header">
     <!-- 1. 点击图标相当于点击 -->
     <div class="input-icon" tabindex="0">
-      <SvgIcon size="20" name="icon-zhaopian" class="pointer" @click="openFileSelect"></SvgIcon>
+      <el-icon :size="20"  @click="openFileSelect"><Picture /></el-icon>
     </div>
     <!-- 包裹表情图标和列表的容器 -->
-
     <div class="input-icon" tabindex="0">
-      <SvgIcon size="20" name="icon-biaoqing" class="icon-emoji pointer" @click="opeEmojiSelect">
-      </SvgIcon>
+      <el-icon :size="20" @click="opeEmojiSelect"><ChatRound /></el-icon>
     </div>
     <!-- 2. 真正的文件选择框，隐藏起来 -->
     <input ref="fileInputRef" type="file" accept="image/*" style="display: none" @change="onFileChange" />
@@ -30,14 +28,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, type PropType } from 'vue';
 import proButton from "@/components/Button/proButton.vue";
 import { ElMessage } from 'element-plus';
-import SvgIcon from '@/components/SvgIcon/SvgIcon.vue';
-import { sendSingleImageService, sendMessageService, sendEmojiMessageService } from '@/api/chat';
+import { sendEmojiService, sendImageService, sendMessageService } from '@/api/chat';
 import { useUserStore } from '@/stores';
+import type { Chat} from '@/type/chatType';
 import ImageListMapper from '@/components/Image/ImageListMapper.vue';
-import { t } from '@/utils/i18n';
 
 const userStore = useUserStore()
 const content = ref('')
@@ -45,6 +42,13 @@ const fileInputRef = ref<HTMLInputElement>();
 const previewUrl = ref<string>();
 const imageFile = ref<File>();
 const emojiVisible = ref(false);
+
+const props = defineProps({
+  chating: {
+    type: Object as PropType<Chat>,
+    required: true
+  },
+})
 
 const emit = defineEmits<{
   scrollToBottom: []
@@ -70,9 +74,10 @@ const onFileChange = async (e: Event) => {
   previewUrl.value = URL.createObjectURL(file);
 
   const formData = new FormData();
-  formData.append('image', file);
-
-  await sendSingleImageService(formData, userStore.deviceId)
+  formData.append('messageType', 'single');
+  formData.append('message', file);  
+  formData.append('toUser', props.chating.nickname);
+  await sendImageService(formData)
   onSendSuccess()
 }
 
@@ -95,7 +100,7 @@ const send = async () => {
     return
   }
 
-  await sendMessageService({ type: 'single', message: content.value }, userStore.deviceId)
+  await sendMessageService({ chatType: 'single', message: content.value, toUser: props.chating.nickname })
   content.value = ''
   onSendSuccess()
 }
@@ -118,7 +123,7 @@ const nonEmojiSelect = () => {
 const handleEmojiSelect = async (emoji: string) => {
 
   emojiVisible.value = false
-  await sendEmojiMessageService({ type: 'single', message: emoji }, userStore.deviceId)
+  await sendEmojiService({ chatType: 'single', message: emoji, toUser: props.chating.nickname })
   onSendSuccess()
 }
 
@@ -129,6 +134,7 @@ defineExpose({
   nonEmojiSelect
 })
 </script>
+
 
 <style lang="scss" scoped>
 .input-header {
@@ -172,7 +178,7 @@ defineExpose({
   scrollbar-width: thin;
   scrollbar-color: #c4c4c4 transparent;
   width: 100%;
-  height: 72px;
+  height: 74px;
 }
 
 .input-textarea {
@@ -182,12 +188,12 @@ defineExpose({
   white-space: pre-wrap;
   word-wrap: break-word;
   word-break: break-all;
-
   letter-spacing: 1px;
   font-family: inherit;
   font-size: 12px;
   resize: none;
   outline: none;
+  border: none;
 }
 
 .input-textarea::-webkit-scrollbar {
@@ -214,3 +220,4 @@ defineExpose({
   margin-left: auto;
 }
 </style>
+

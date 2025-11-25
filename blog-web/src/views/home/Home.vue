@@ -1,96 +1,175 @@
 <template>
-  <div class="home-warp">
-    <!--背景轮播-->
-    <BackgroundImages></BackgroundImages>
-    <!-- 品牌 -->
-    <Brand></Brand>
+    <div class="home">
+        <div class="splitter-container">
+            <el-splitter lazy>
+                <el-splitter-panel :size="360" :min="350" :max="500">
+                    <div class="stat-card">
+                        <StatCardList />
+                    </div>
+                </el-splitter-panel>
+                <el-splitter-panel  :size="620" :min="520" :max="650">
+                    <CalendarView v-show="!calendar" :art-and-talk-list="artAndTalkList" />
+                </el-splitter-panel>
+                <el-splitter-panel>
+                    <Segmented />
+                </el-splitter-panel>
+            </el-splitter>
+        </div>
 
-    <div class="bg">
-      <div class="header"></div>
-      <div class="main-container">
-        <div class="left-container">
-          <!-- 说说 -->
-          <Talk></Talk>
-          <!-- 推荐相册 -->
-          <Recommend></Recommend>
-          <!-- 文章列表 -->
-          <ArticleItem></ArticleItem>
+        <div class="echarts">
+            <echarts v-loading="loading" :x-data="chartData.xData" :y-data="chartData.yData" title="最近访问量"
+                width="1000px" />
+
+            <div class="table-container">
+                <h3 class="table-title">最近访客</h3>
+                <el-table v-loading="loading" :data="viewInfoList" class="table">
+                    <el-table-column prop="ip" label="IP"></el-table-column>
+                    <el-table-column prop="city" label="地区"></el-table-column>
+                    <el-table-column prop="createTime" label="时间"></el-table-column>
+                    <el-table-column prop="nickname" label="昵称"></el-table-column>
+                    <template #empty>
+                        <el-empty description="没有数据"></el-empty>
+                    </template>
+                </el-table>
+            </div>
         </div>
-        <div class="right-container">
-          <SideBar></SideBar>
-        </div>
-      </div>
     </div>
-  </div>
+
 </template>
 
-<script setup lang="ts">
-import BackgroundImages from './BackgroundImages.vue';
-import Brand from './Brand.vue';
-import Talk from './Talk.vue';
-import Recommend from './Recommend.vue';
-import SideBar from '@/components/SideBar/SideBar.vue';
-import ArticleItem from '@/components/Article/ArticleItem.vue';
+<script lang="ts" setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+import echarts from '@/components/Echarts/echarts.vue';
+import StatCardList from '@/components/Statistics/StatCardList.vue';
+import type { ArtAndTalkList, ViewData, ViewInfo } from '@/type/home';
+import { getArtAndTalkStatisticsService, getViewInfoListService, getViewStatisticsService } from '@/api/statistics';
+import { formatDate, removeTFrontDateString } from '@/utils/commom';
+import CalendarView from '@/components/Calendar/CalendarView.vue';
+import Segmented from '@/components/Statistics/Segmented.vue';
+
+const loading = ref(false)
+
+// 内容数据
+const artAndTalkList = ref<ArtAndTalkList[]>([])
+
+const viewData = ref<ViewData[]>([])
+const chartData = ref<{ xData: string[], yData: number[] }>({
+    xData: [],
+    yData: []
+});
+
+const generateChartData = () => {
+    const xData: string[] = [];
+    const yData: number[] = [];
+
+    viewData.value.forEach((item) => {
+        xData.push(item.createTime);
+        yData.push(item.viewCount);
+    });
+
+    // 倒序处理
+    return {
+        xData: xData,
+        yData: yData,
+    };
+};
+
+const viewInfoList = ref<ViewInfo[]>([])
+const calendar = ref(true)
+const getArtAndTalkStatistics = async () => {
+    calendar.value = true
+    try {
+        const artAndTalk = await getArtAndTalkStatisticsService()
+        if (artAndTalk.data.data) {
+            artAndTalkList.value = artAndTalk.data.data
+        }
+        calendar.value = false
+    } catch (error) {
+        console.error('Failed to fetch art and talk statistics:', error)
+    }
+}
+
+const getStatisticsData = async () => {
+    loading.value = true
+
+    getArtAndTalkStatistics()
+    const vd = await getViewStatisticsService()
+    if (vd.data.data) {
+        vd.data.data.forEach((item: { id: any; viewCount: any; createTime: string | Date; }) => {
+            viewData.value.push({ id: item.id, viewCount: item.viewCount, createTime: formatDate(item.createTime) })
+        })
+    }
+
+    chartData.value = generateChartData()
+
+    const info = await getViewInfoListService()
+    if (info.data.data) {
+        for (const item of info.data.data) {
+            viewInfoList.value.push({ ...item, createTime: removeTFrontDateString(item.createTime) })
+            console.info(removeTFrontDateString(item.createTime))
+        }
+    }
+
+    loading.value = false
+}
+
+
+onMounted(() => {
+    getStatisticsData()
+});
+
+onUnmounted(() => {
+});
 </script>
 
 <style lang="scss" scoped>
-.home-warp {
-  box-sizing: border-box;
-}
-
-.bg {
-  width: 100%;
-  position: relative;
-  z-index: 1;
-  transition: margin-top 0.3s ease;
-  background-color: var(--grey-1);
-}
-
-.header {
-  height: 60px;
-}
-
-.main-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: 1080px;
-  margin: 0 auto;
-  padding-bottom: 1.75rem;
-}
-
-.left-container {
-  width: calc(100% - 18.75rem);
-}
-
-.right-container {
-  position: sticky;
-  top: 74px;
-  width: 18rem;
-  margin-left: 10px;
-  align-self: flex-start;
-}
-
-/* 移动端适配 */
-@media (max-width: 767px) {
-
-  .main-container {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .left-container {
-    width: 100%;
-  }
-
-  .right-container {
-    position: absolute;
-    left: -9999px;
-    visibility: hidden;
-    pointer-events: none;
-    width: 18rem;
+.home {
     height: 100%;
-    overflow: hidden;
-  }
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+}
+
+
+
+.splitter-container {
+    border: 1px solid var(--grey-9-a1);
+    margin-top: 12px;
+}
+
+/* 响应式设计：在小屏幕上显示为单列 */
+@media (max-width: 768px) {
+    .calendar {
+        grid-template-columns: 1fr;
+    }
+}
+
+.echarts {
+    margin-top: 12px;
+    border: 1px solid var(--grey-9-a1);
+    padding: 20px;  
+    display: flex;
+}
+
+.table-container {
+    width: 550px;
+    height: 500px;
+    margin-left: 30px;
+}
+
+.table {
+    width: 100%;
+    height: calc(100% - 40px);
+    margin-top: 10px;
+}
+
+.table-title {
+    margin: 0;
+    padding: 8px 0;
+    font-size: 18px;
+    color: var(--grey-6);
+    border-bottom: 1px solid var(--grey-9-a1);
 }
 </style>

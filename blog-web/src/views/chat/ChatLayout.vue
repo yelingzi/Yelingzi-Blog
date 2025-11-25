@@ -8,17 +8,11 @@
         <el-container>
           <el-header class="chat-header">
             <h1 class="chat-header-name">{{ chating.nickname }}</h1>
-            <div v-if="!userStore.getIsLogin() && chating.chatType == 'single'" class="chat-header-tip">
-              私聊请使用新版页面喵~，这里回复时间较慢哦~
-            </div>
           </el-header>
           <el-main class="chat-main">
-            <ChatRecord v-if="chating.chatType === 'single'" :chating="chating" @load-more="onLoadMore"
+            <ChatRecord :chating="chating" @load-more="onLoadMore"
               :has-more="hasMore" ref="chatRef">
             </ChatRecord>
-            <GroupChatRecord v-else-if="chating.chatType === 'group'" :chat-record-list="chating.chatMessageList"
-              @load-more="onLoadMore" :has-more="hasMore" ref="chatRef">
-            </GroupChatRecord>
           </el-main>
           <el-footer class="chat-footer">
             <ChatInput v-if="chating.chatType === 'single'" :chating="chating" ref="chatInputRef">
@@ -34,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Chat, ChatMessage, WsMsg } from '@/types/chatType'
+import type { Chat, ChatMessage, WsMsg } from '@/type/chatType'
 import { reactive, toRefs, watch, onMounted, onUnmounted, nextTick, ref } from 'vue'
 import { useUserStore } from '@/stores'
 import { useChatStore } from '@/stores/modules/chat'
@@ -45,8 +39,9 @@ import ChatRecord from './ChatRecord.vue';
 import GroupChatRecord from './GroupChatRecord.vue';
 import GroupChatInput from './GroupChatInput.vue'
 import ChatList from './ChatList.vue'
-import { getChatListService, getNewChatCountByGroupService, getNewChatCountBySingleService } from '@/api/chat'
+import { getChatListService } from '@/api/chat'
 import { ElMessage } from 'element-plus'
+import router from '@/router'
 import { addWsMessageHandler, removeWsMessageHandler } from '@/utils/websocket'
 
 /* ---------------- stores / router ---------------- */
@@ -54,8 +49,8 @@ const userStore = useUserStore()
 const chatStore = useChatStore()
 const route = useRoute()
 
-
 /* ---------------- reactive state ---------------- */
+const chatInputRef = ref<InstanceType<typeof ChatInput> | InstanceType<typeof GroupChatInput>>()
 const state = reactive({
   /* 当前在看的会话 id */
   currentChatId: '' as string,
@@ -90,14 +85,12 @@ const state = reactive({
 const { chating, unReadMessage, hasMore } = toRefs(state)
 const chatRef = ref()
 const starting = ref(true)
-const chatInputRef = ref()
-
 
 /* WS 收到消息后统一入口 */
-function handleWsMessage(raw: WsMsg) {
-  const { receiver, message } = raw
+function handleWsMessage(msg: { data: WsMsg }) {
+  const { receiver, message } = msg.data
 
-  console.log("raw:", raw)
+  console.log("raw:", msg.data)
   /* ---- 1. 当前会话 ---- */
   if (state.currentChatId === receiver) {
     chating.value.chatMessageList.push(message)
@@ -105,21 +98,6 @@ function handleWsMessage(raw: WsMsg) {
     handleScrollToBottom()
     return
   }
-
-  /* ---- 2. 非当前会话 ---- */
-  const target = chatStore.chatList.find(c => c.id === receiver)
-  if (!target) return
-
-  const lastMsg = target.chatMessageList.at(-1)
-  // 末尾消息与旧 lastMessage 完全相等（id 相同即可）
-  const needUpdateList = lastMsg && lastMsg.id === target.lastMessage.id
-
-  if (needUpdateList) {
-    target.chatMessageList.push(message)
-  }
-  target.lastMessage = message
-  target.unReadChat++
-  handleScrollToBottom()
 }
 
 /* ---------------- 工具函数 ---------------- */
@@ -186,18 +164,6 @@ const initSession = (id: string) => {
 
   saveSession()
 
-  refreshNewCount()
-
-  initChating(id)
-
-  loadLatestMessages()
-
-  state.unReadMessage = state.chating.unReadChat
-  state.chating.unReadChat = 0
-
-}
-
-const initChating = (id: string) => {
   const target = chatStore.chatList.find(c => c.id === id)
   if (!target) {
     state.chating = {
@@ -212,7 +178,10 @@ const initChating = (id: string) => {
     }
     return
   }
+  target.unReadChat = 0
   state.chating = { ...target, chatMessageList: [...target.chatMessageList] }
+
+  loadLatestMessages()
 }
 
 /* 3. 加载最新消息（或历史） */
@@ -278,54 +247,7 @@ const loadLatestMessages = async () => {
   state.hasMore = data.data.hasMore
 }
 
-/* 轮询 / 获取每天会话的新消息 */
-const refreshNewCount = async () => {
-  let maxSingleId = 0;
-  let maxGroupId = 0;
-  chatStore.chatList.forEach(c => {
-    const ids = [
-      ...c.chatMessageList.map(m => m.id),
-      c.lastMessage?.id ?? 0
-    ];
-    const maxId = Math.max(...ids);
 
-    if (c.chatType === 'single' && maxId > maxSingleId) maxSingleId = maxId;
-    if (c.chatType === 'group' && maxId > maxGroupId) maxGroupId = maxId;
-  });
-
-  // 分别获取单聊和群聊的新消息
-  const [singleChatData, groupChatData] = await Promise.all([
-    getNewChatCountBySingleService({ device: userStore.deviceId, id: maxSingleId }),
-    getNewChatCountByGroupService({ device: userStore.deviceId, id: maxGroupId })
-  ]);
-
-  // 处理单聊数据
-  for (const brief of singleChatData.data.data) {
-    const exist = chatStore.chatList.find(c => c.id === brief.info.id && c.chatType === brief.info.type);
-    if (exist) {
-      // 单聊返回消息列表，需要添加到现有消息中
-      if (brief.messages && brief.messages.length > 0) {
-        exist.chatMessageList = [...exist.chatMessageList, ...brief.messages];
-        exist.unReadChat += brief.messages.length;
-        if (brief.messages[brief.messages.length - 1].id > (exist.lastMessage?.id || 0)) {
-          exist.lastMessage = brief.messages[brief.messages.length - 1];
-        }
-      }
-    }
-  }
-
-  // 处理群聊数据
-  for (const brief of groupChatData.data.data) {
-    const exist = chatStore.chatList.find(c => c.id === brief.info.id && c.chatType === 'group');
-    if (exist) {
-      exist.unReadChat += brief.count;
-      if (brief.lastMessage && brief.lastMessage.id > (exist.lastMessage?.id || 0)) {
-        exist.lastMessage = brief.lastMessage;
-      }
-    }
-  }
-
-}
 
 /* 5. 向上滚动加载历史 */
 async function onLoadMore(done: () => void) {
@@ -364,10 +286,12 @@ async function onLoadMore(done: () => void) {
 
 }
 
+
+
 /* ---------------- 生命周期 ---------------- */
-onMounted(() => {
-  addWsMessageHandler('chat', handleWsMessage)
+onMounted(() => { 
   handleMyMessage()
+  addWsMessageHandler('chat', handleWsMessage)
   document.addEventListener('mousedown', onMouseDown)
   starting.value = false
 })
@@ -379,18 +303,23 @@ onUnmounted(() => {
 })
 
 /* ---------------- 路由监听 ---------------- */
+const goDefaultChat = () => {
+  const defaultChat = chatStore.chatList.at(1) // 聊天室
+  if (!defaultChat) {
+    ElMessage.info('聊天室没有会话喵！')
+    return
+  }
+  router.push({ name: 'dynamic_36', params: { chatId: defaultChat.route } })
+}
+
 watch(
-  () => route.params.chatType as string,
-  (chatType) => {
-    if (!chatType) {
-      ElMessage.error('没有这个会话喵！')
-      return
-    }
-    const target = chatStore.chatList.find(c => c.route === chatType)
-    if (!target) {
-      ElMessage.error('加载失败喵！')
-      return
-    }
+  () => route.params.chatId as string,
+  (chatId) => {
+    if (!chatId || chatId === ':chatId') return goDefaultChat()
+
+    const target = chatStore.chatList.find(c => c.route === chatId)
+    if (!target) return goDefaultChat()
+
     initSession(target.id)
   },
   { immediate: true }
@@ -402,7 +331,7 @@ watch(
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100%;
   background-color: var(--grey-1);
 }
 
