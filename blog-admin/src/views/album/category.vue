@@ -3,41 +3,52 @@
         <template #extra>
             <el-button @click="onAddAlbum">添加新的相册</el-button>
         </template>
+        <div class="table-wrapper">
+            <el-table v-loading="loading" :data="albumList" style="width: 100%" class="table"
+                :row-class-name="tableRowClassName">
+                <el-table-column type="index" label="序号" width="80"></el-table-column>
+                <el-table-column prop="albumName" label="相册名称"></el-table-column>
+                <el-table-column prop="albumDesc" label="相册描述"></el-table-column>
+                <el-table-column prop="" label="相册封面" width="200">
+                    <template #default="{ row }">
+                        <el-image class="article-image" :src="row.albumCover" fit="cover" />
+                    </template>
+                </el-table-column>
+                <el-table-column prop="createTime" label="创建时间"></el-table-column>
+                <el-table-column prop="userId" label="创建者ID"></el-table-column>
+                <el-table-column prop="nickname" label="创建者昵称"></el-table-column>
+                <el-table-column label="操作" width="120">
+                    <template #default="{ row, $index }">
+                        <el-button circle plain type="primary" @click="onEditAlbum(row, $index)"><el-icon>
+                                <Edit />
+                            </el-icon></el-button>
+                        <el-button v-if="row.isDel === 0" circle plain type="danger"
+                            @click="onDelAlbum(row.id, $index)"><el-icon>
+                                <Delete />
+                            </el-icon>
+                        </el-button>
+                        <el-button v-else circle plain type="primary"
+                            @click="onPassAlbum(row.id, $index)"><el-icon>
+                                <Check />
+                            </el-icon>
+                        </el-button>
+                    </template>
+                </el-table-column>
 
-        <el-table v-loading="loading" :data="albumList" style="width: 100%" class="table"
-            :row-class-name="tableRowClassName">
-            <el-table-column type="index" label="序号" width="80"></el-table-column>
-            <el-table-column prop="albumName" label="相册名称"></el-table-column>
-            <el-table-column prop="albumDesc" label="相册描述"></el-table-column>
-            <el-table-column prop="" label="相册封面" width="200">
-                <template #default="{ row }">
-                    <el-image class="article-image" :src="row.albumCover" fit="cover" />
+                <template #empty>
+                    <el-empty description="没有数据"></el-empty>
                 </template>
-            </el-table-column>
-            <el-table-column prop="createTime" label="创建时间"></el-table-column>
-            <el-table-column prop="userId" label="创建者ID"></el-table-column>
-            <el-table-column prop="nickname" label="创建者昵称"></el-table-column>
-            <el-table-column label="操作" width="120">
-                <template #default="{ row, $index }">
-                    <el-button circle plain type="primary" @click="onEditAlbum(row, $index)"><el-icon>
-                            <Edit />
-                        </el-icon></el-button>
-                    <el-button v-if="row.isDel === 0" circle plain type="danger"
-                        @click="onDelAlbum(row.id, $index)"><el-icon>
-                            <Delete />
-                        </el-icon></el-button>
-                </template>
-            </el-table-column>
+            </el-table>
 
-            <template #empty>
-                <el-empty description="没有数据"></el-empty>
-            </template>
-        </el-table>
-        <div class="pagination">
-            <el-pagination v-model:current-page="page" :disabled="disabled" :background="background"
-                :page-sizes="[10, 20, 30, 50]" layout="total, sizes, prev, pager, next, jumper" :total="total"
-                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
+
+        <template #pagination>
+            <div class="pagination">
+                <el-pagination v-model:current-page="page" :disabled="disabled" :background="background"
+                    :page-sizes="[10, 20, 30, 50]" layout="total, sizes, prev, pager, next, jumper" :total="total"
+                    @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+            </div>
+        </template>
     </page-container>
     <el-dialog v-model="dialogVisible" :title="dialogTitle" :lock-scroll="false" width="500" center class="addAlbum">
         <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
@@ -70,8 +81,10 @@
 </template>
 
 <script lang="ts" setup>
-import { addAlbumService, getAlbumListByPageService, uploadAlbumCoverService } from '@/api/album';
-import { addCategoryService, delCategoryService, getCategoryListByPageService } from '@/api/category';
+import { 
+    addAlbumService, getAlbumListByPageService, uploadAlbumCoverService,
+    delAlbumService,passAlbumService 
+} from '@/api/album';
 import PageContainer from '@/components/pageContainer/PageContainer.vue';
 import type { AlbumVO } from '@/type/album';
 import { ElMessage, type UploadProps } from 'element-plus';
@@ -125,10 +138,17 @@ const handleSizeChange = (val: number) => {
     pageSize.value = val
 }
 const onDelAlbum = async (id: any, index: any) => {
-    await delCategoryService(id);
+    await delAlbumService(id);
     ElMessage.success("删除成功")
     getAlbumList()
 }
+
+const onPassAlbum = async (id: number, index: any) => {
+    await passAlbumService(id);
+    ElMessage.success("恢复成功")
+    getAlbumList()
+}
+
 const onEditAlbum = (row: any, index: any) => {
     dialogTitle.value = "修改相册"
     form.value.albumDesc = row.albumDesc
@@ -143,7 +163,7 @@ const onAddAlbum = () => {
 
 const submitForm = async () => {
     console.log(checkAlbum())
-    if (await checkAlbum()) {        
+    if (await checkAlbum()) {
         loading.value = true
         await addAlbumService({
             id: 0,
@@ -165,7 +185,7 @@ const checkAlbum = async () => {
     let bool = false
     await formRef.value.validate((valid: any) => {
         if (valid) {
-            bool =  true
+            bool = true
         } else {
             ElMessage.error('请检查表单内容');
         }
@@ -219,15 +239,19 @@ onMounted(() => {
 
 
 <style lang="scss" scoped>
-.table {
-    height: 76vh;
+.table-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .table {
+        flex: 1;
+    }
 }
 
 .pagination {
     display: flex;
     justify-content: flex-end;
-    /* 将内容推到右边 */
-    margin-top: 12px;
 }
 
 :deep(.el-table .warning-row) {
@@ -258,7 +282,8 @@ onMounted(() => {
     }
 
 }
-.article-image{
+
+.article-image {
     max-height: 160px;
 }
 </style>

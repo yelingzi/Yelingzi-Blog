@@ -1,50 +1,55 @@
 <template>
 
-    <page-container title="留言管理">
+    <page-container title="说说评论管理">
         <template #extra>
             <!-- <el-button @click="onAddMessage">添加新的留言</el-button> -->
         </template>
+        <div class="table-wrapper">
+            <el-table v-loading="loading" :data="commentList" style="width: 100%" class="table"
+                :row-class-name="tableRowClassName">
+                <el-table-column prop="id" label="序号" width="80"></el-table-column>
+                <el-table-column prop="talkId" label="说说" width="80"></el-table-column>
+                <el-table-column prop="content" label="内容"></el-table-column>
+                <el-table-column prop="createTime" label="评论时间" width="200"></el-table-column>
+                <el-table-column prop="userId" label="评论ID" width="100"></el-table-column>
+                <el-table-column prop="userNickname" label="评论昵称" width="200"></el-table-column>
+                <el-table-column prop="toId" label="回复ID" width="100"></el-table-column>
+                <el-table-column prop="toNickname" label="回复昵称" width="200"></el-table-column>
+                <el-table-column prop="replyCount" label="回复数" width="100"></el-table-column>
+                <el-table-column prop="" label="状态" width="100">
+                    <template #default="{ row }">
+                        <el-tag type="primary" v-if="row.state === 0">待审核</el-tag>
+                        <el-tag type="danger" v-else-if="row.state === 1">删除</el-tag>
+                        <el-tag type="success" v-else-if="row.state === 2">正常</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" width="120">
+                    <template #default="{ row, $index }">
+                        <el-button v-if="row.state !== 2" circle plain type="primary"
+                            @click="onPassMessage(row.id, $index)"><el-icon>
+                                <Check />
+                            </el-icon></el-button>
+                        <el-button v-if="row.state !== 1" circle plain type="danger"
+                            @click="onDelMessage(row.id, $index)"><el-icon>
+                                <Delete />
+                            </el-icon></el-button>
+                    </template>
+                </el-table-column>
 
-        <el-table v-loading="loading" :data="commentList" style="width: 100%" class="table"
-            :row-class-name="tableRowClassName">
-            <el-table-column prop="id" label="序号" width="80"></el-table-column>
-            <el-table-column prop="talkId" label="说说" width="80"></el-table-column>
-            <el-table-column prop="content" label="内容"></el-table-column>
-            <el-table-column prop="createTime" label="评论时间" width="200"></el-table-column>
-            <el-table-column prop="userId" label="评论ID" width="100"></el-table-column>
-            <el-table-column prop="userNickname" label="评论昵称" width="200"></el-table-column>
-            <el-table-column prop="toId" label="回复ID" width="100" ></el-table-column>
-            <el-table-column prop="toNickname" label="回复昵称" width="200"></el-table-column>
-            <el-table-column prop="replyCount" label="回复数" width="100"></el-table-column>
-            <el-table-column prop="" label="状态" width="100">
-                <template #default="{ row }">
-                    <el-tag type="primary" v-if="row.state === 0">待审核</el-tag>
-                    <el-tag type="danger" v-else-if="row.state === 1">删除</el-tag>
-                    <el-tag type="success" v-else-if="row.state === 2">正常</el-tag>
+                <template #empty>
+                    <el-empty description="没有数据"></el-empty>
                 </template>
-            </el-table-column>
-            <el-table-column label="操作" width="120">
-                <template #default="{ row, $index }">
-                    <el-button v-if="row.state !== 2" circle plain type="primary"
-                        @click="onPassMessage(row.id, $index)"><el-icon>
-                            <Check />
-                        </el-icon></el-button>
-                    <el-button v-if="row.state !== 1" circle plain type="danger"
-                        @click="onDelMessage(row.id, $index)"><el-icon>
-                            <Delete />
-                        </el-icon></el-button>
-                </template>
-            </el-table-column>
+            </el-table>
 
-            <template #empty>
-                <el-empty description="没有数据"></el-empty>
-            </template>
-        </el-table>
-        <div class="pagination">
-            <el-pagination v-model:current-page="page" :disabled="disabled" :background="background"
-                :page-sizes="[10, 20, 30, 50]" layout="total, sizes, prev, pager, next, jumper" :total="total"
-                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
         </div>
+        <template #pagination>
+            <div class="pagination">
+                <el-pagination v-model:current-page="page" :disabled="disabled" :background="background"
+                    :page-sizes="[10, 20, 30, 50]" layout="total, sizes, prev, pager, next, jumper" :total="total"
+                    @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+            </div>
+        </template>
+
     </page-container>
     <el-dialog v-model="dialogVisible" title="添加留言" :lockScroll="false" width="500" center>
         <div class="input-button-container">
@@ -62,7 +67,7 @@
 </template>
 
 <script lang="ts" setup>
-import { delTalkCommentService,  getTalkCommentListByPageService, updateTalkCommentService } from '@/api/comment';
+import { delTalkCommentService, getTalkCommentListByPageService, updateTalkCommentService } from '@/api/comment';
 import { addMessageService, } from '@/api/message';
 import PageContainer from '@/components/pageContainer/PageContainer.vue';
 import type { ArticleComment, TalkComment } from '@/type/comment';
@@ -147,15 +152,19 @@ onMounted(() => {
 
 
 <style lang="scss" scoped>
-.table {
-    height: 76vh;
+.table-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .table {
+        flex: 1;
+    }
 }
 
 .pagination {
     display: flex;
     justify-content: flex-end;
-    /* 将内容推到右边 */
-    margin-top: 12px;
 }
 
 :deep(.warning-row) {
@@ -164,5 +173,5 @@ onMounted(() => {
 
 :deep(.success-row) {
     background-color: #e1f3d8;
-} 
+}
 </style>

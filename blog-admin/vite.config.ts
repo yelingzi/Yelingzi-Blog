@@ -8,6 +8,7 @@ import compression from 'vite-plugin-compression'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -16,9 +17,9 @@ export default defineConfig({
     vueDevTools(),
     svgLoader(),
     compression({
-      algorithm: 'gzip', // 可以选择其他算法如 'brotliCompress'
-      threshold: 51200, // 只有文件大小大于阈值时才压缩，默认值为10240字节（10KB）
-      deleteOriginFile: false, // 是否删除原始文件，默认为false
+      algorithm: 'gzip',
+      threshold: 51200,
+      deleteOriginFile: false,
     }),
     AutoImport({
       resolvers: [ElementPlusResolver()],

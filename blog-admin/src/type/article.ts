@@ -1,5 +1,5 @@
 export interface ArticleDTO {
-    id: number 
+    id: number
     title: string,
     content: string,
     category: number,
@@ -92,6 +92,7 @@ export interface Article {
     originalUrl: string;
     isTop: number
 }
+
 export interface Tag {
     /**
      * 标签id
@@ -102,3 +103,38 @@ export interface Tag {
      */
     tagName: string
 }
+
+export interface ArticleLikeVO {
+    id: number;
+    articleId: number;
+    likeTime: string;
+    userId: number;
+}
+
+export interface ArticleLikeTableVO {
+    page: number,
+    pageSize: number,
+    total: number,
+    loading: boolean,
+    list: ArticleLikeVO[]
+}
+
+export interface ArticleSearchOption {
+    value: string,
+    label: string
+}
+
+export type Option = {
+    value: string
+    label: string
+    type: 'Date' | 'Select'
+    opt?: { label: string; value: string }[]
+    fn?: never
+} | {
+    value: string
+    label: string
+    type: 'Autocomplete'
+    fn: (q: string, cb: any) => void
+    opt?: never
+}
+

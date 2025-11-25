@@ -1,7 +1,7 @@
 <template>
   <div v-for="chat in chatStore.chatList" class="chat-list" @click="pushChating(chat)" :key="chat.id"
     :class="{ active: chat.id === props.currentChatId }">
-    <el-avatar :src="chat.avatar"></el-avatar>
+    <yl-avatar :src="chat.avatar"></yl-avatar>
     <div class="chat-content">
       <div class="chat-info">
         <div class="chat-name">{{ chat.nickname }}</div>
@@ -17,6 +17,7 @@
             <span v-if="chat.lastMessage.messageType === 'text'">{{ chat.lastMessage.message }}</span>
             <span v-else-if="chat.lastMessage.messageType === 'image'" class="image-msg"></span>
             <span v-else-if="chat.lastMessage.messageType === 'file'" class="file-msg"></span>
+            <span v-else-if="chat.lastMessage.messageType === 'emoji'" class="emoji-msg"></span>
           </template>
         </div>
 
@@ -33,6 +34,7 @@ import { useChatStore } from '@/stores/modules/chat'
 import { useRouter } from 'vue-router';
 import { formatChatListDisplayTime } from '@/utils/commom'
 import { useUserStore } from '@/stores';
+import YlAvatar from '@/components/Image/YlAvatar.vue';
 
 const props = defineProps({
   currentChatId: {
@@ -157,5 +159,10 @@ const pushChating = (chat: Chat) => {
 .file-msg::after {
   content: "【文件】";
   color: #48bb78;
+}
+
+.emoji-msg::after {
+  content: "【表情】";
+  color: #ffd900;
 }
 </style>

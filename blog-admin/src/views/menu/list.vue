@@ -7,7 +7,7 @@
             </el-select>
             <el-button @click="onAddMenu">添加新的菜单</el-button>
         </template>
-
+<div class="table-wrapper"></div>
         <el-table v-loading="loading" :data="menuList" style="width: 100%" class="table"
             :row-class-name="tableRowClassName" row-key="id" :tree-props="{ children: 'children' }"
             border >
@@ -132,7 +132,7 @@ import type { MenuDTO, MenuVO } from '@/type/menu';
 import { ElMessage, type UploadProps } from 'element-plus';
 import { onMounted, reactive, ref, watch } from 'vue';
 
-const menuList: MenuVO[] = reactive([])
+const menuList = ref<MenuVO[]>([])
 const loading = ref(false)
 const selectMenu = ref(0)
 const dialogVisible = ref(false)
@@ -159,9 +159,7 @@ const getMenuList = async () => {
     loading.value = true
     clearMenu()
     const res = await getMenuListService(selectMenu.value)
-    for (const r of res.data.data) {
-        menuList.push(r)
-    }
+    menuList.value = res.data.data
     loading.value = false
 }
 
@@ -260,8 +258,8 @@ const resetForm = () => {
 };
 
 const clearMenu = () => {
-    if (menuList.length > 0) {
-        menuList.splice(0, menuList.length)
+    if (menuList.value.length > 0) {
+        menuList.value.splice(0, menuList.value.length)
     }
 }
 

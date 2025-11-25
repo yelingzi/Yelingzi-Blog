@@ -1,19 +1,16 @@
 <!-- /views/article/write -->
 <template>
-    <el-card shadow="never" class="container">
-        <template #header>
+    <PageContainer :title="articleId === 0 ? '发布文章' : '编辑文章：' + article.title">
+        <template #extra>
             <div class="header-content">
-                <span v-if="articleId === 0">发布文章</span>
-                <span v-else>编辑文章：{{ article.title }}</span>
-                <div>
-                    <el-button @click="openHtmlText">常用HTML标签</el-button>
-                    <el-button @click="clearContent">清空</el-button>
-                    <el-button @click="setsetArticle">保存文章</el-button>
-                </div>
+                <el-button @click="openHtmlText">常用HTML标签</el-button>
+                <el-button @click="clearContent">清空</el-button>
+                <el-button @click="setsetArticle">保存文章</el-button>
             </div>
         </template>
+
         <md-editor v-model="articleContent" @onUploadImg="handleUploadImage" :showToolbarName="true" class="md-edit" />
-    </el-card>
+    </PageContainer>
     <el-dialog v-model="showFormDialog" title="文章设置" width="50%">
         <div class="article-form">
             <el-form :model="form" label-width="120px" :rules="rules" ref="articleForm">
@@ -108,6 +105,7 @@ import { getCategoryListService } from '@/api/category';
 import { booleanToNumber, numberToBoolean } from '@/utils/commom';
 import { useRoute } from 'vue-router'
 import openHtml from '@/components/HtmlTag/openHtml.vue';
+import PageContainer from '@/components/pageContainer/PageContainer.vue';
 
 const route = useRoute()
 const articleId = computed(() => {
@@ -244,11 +242,9 @@ const customUpload: UploadProps['httpRequest'] = async (options) => {
         const response = await uploadArticleCoverService(formData);
         imageUrl.value = response.data.data;
         form.value.articleCover = imageUrl.value
-        if (response.data.code === 1) {
-            ElMessage.success("上传成功")
-        } else {
-            ElMessage.error('上传失败，请重试！');
-        }
+
+        ElMessage.success("上传成功")
+
     } catch (error) {
 
     }
@@ -453,16 +449,8 @@ onMounted(async () => {
     justify-content: space-between;
 }
 
-.container {
-    width: 1670 px;
-
-    .md-edit {
-        height: 790px;
-    }
-
-    :deep(.el-card__body) {
-        padding: 0;
-    }
+.md-edit {
+    height: 100%;
 }
 
 .article-form {

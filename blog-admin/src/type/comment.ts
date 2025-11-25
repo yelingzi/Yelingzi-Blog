@@ -10,7 +10,8 @@ export interface ArticleComment {
     toNickname: string
     replyCount: number
     createTime: string
-    state: string
+    state: number
+    likeCount: number
 }
 
 export interface TalkComment {

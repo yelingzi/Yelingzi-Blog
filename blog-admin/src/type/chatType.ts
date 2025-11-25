@@ -39,5 +39,6 @@ interface ChatInfo {
 
 export interface WsMsg {
   receiver: string
+  messageType: 'single' | 'group'
   message: ChatMessage
 }

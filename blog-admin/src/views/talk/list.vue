@@ -4,72 +4,76 @@
         <template #extra>
             <el-button @click="toAddTalk">添加新的说说</el-button>
         </template>
+        <div class="table-wrapper">
+            <el-table v-loading="loading" :data="talkList" style="width: 100%" class="table">
+                <el-table-column type="index" label="序号" width="80"></el-table-column>
+                <el-table-column prop="title" label="标题"></el-table-column>
+                <el-table-column prop="content" label="内容"></el-table-column>
+                <el-table-column prop="" label="图片列表">
+                    <template #default="{ row }">
+                        <div class="table-image-container">
+                            <el-image v-for="(image, index) in row.imageUrl" :key="index" :src="image" fit="cover"
+                                class="table-image" />
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="createTime" label="创建时间"></el-table-column>
+                <el-table-column prop="userId" label="创建者ID" width="100"></el-table-column>
+                <el-table-column prop="nickname" label="创建者昵称"></el-table-column>
+                <el-table-column prop="" label="创建者头像" width="100">
+                    <template #default="{ row }">
+                        <el-avatar :size="50" :src="row.userAvatar" />
+                    </template>
+                </el-table-column>
+                <el-table-column prop="" label="状态" width="80">
+                    <template #default="{ row }">
+                        <el-tag type="primary" v-if="row.state === 0">正常</el-tag>
+                        <el-tag type="danger" v-else-if="row.state === 1">删除</el-tag>
+                        <el-tag type="success" v-else-if="row.isTop === 1">置顶</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" width="180">
+                    <template #default="{ row, $index }">
+                        <el-button circle plain type="primary" @click="toEditTalk(row, $index)"><el-icon>
+                                <Edit />
+                            </el-icon>
+                        </el-button>
+                        <el-button v-if="row.isTop === 0" circle plain type="success"
+                            @click="onUpdateTalkTop(row.id, row.isTop)"><el-icon>
+                                <Top />
+                            </el-icon>
+                        </el-button>
+                        <el-button v-else circle plain type="warning"
+                            @click="onUpdateTalkTop(row.id, row.isTop)"><el-icon>
+                                <Bottom />
+                            </el-icon>
+                        </el-button>
+                        <el-button v-if="row.state !== 1" circle plain type="danger"
+                            @click="onDelTalk(row.id, $index)"><el-icon>
+                                <Delete />
+                            </el-icon>
+                        </el-button>
+                        <el-button v-else circle plain type="warning" @click="onRegainTalk(row.id, $index)"><el-icon>
+                                <Check />
+                            </el-icon>
+                        </el-button>
+                    </template>
+                </el-table-column>
 
-        <el-table v-loading="loading" :data="talkList" style="width: 100%" class="table">
-            <el-table-column type="index" label="序号" width="80"></el-table-column>
-            <el-table-column prop="title" label="标题"></el-table-column>
-            <el-table-column prop="content" label="内容"></el-table-column>
-            <el-table-column prop="" label="图片列表">
-                <template #default="{ row }">
-                    <div class="table-image-container">
-                        <el-image v-for="(image, index) in row.imageUrl" :key="index" :src="image" fit="cover"
-                            class="table-image" />
-                    </div>
+                <template #empty>
+                    <el-empty description="没有数据"></el-empty>
                 </template>
-            </el-table-column>
-            <el-table-column prop="createTime" label="创建时间"></el-table-column>
-            <el-table-column prop="userId" label="创建者ID" width="100"></el-table-column>
-            <el-table-column prop="nickname" label="创建者昵称"></el-table-column>
-            <el-table-column prop="" label="创建者头像" width="100">
-                <template #default="{ row }">
-                    <el-avatar :size="50" :src="row.userAvatar" />
-                </template>
-            </el-table-column>
-            <el-table-column prop="" label="状态" width="80">
-                <template #default="{ row }">
-                    <el-tag type="primary" v-if="row.state === 0">正常</el-tag>
-                    <el-tag type="danger" v-else-if="row.state === 1">删除</el-tag>
-                    <el-tag type="success" v-else-if="row.isTop === 1">置顶</el-tag>
-                </template>
-            </el-table-column>
-            <el-table-column label="操作" width="180">
-                <template #default="{ row, $index }">
-                    <el-button circle plain type="primary" @click="toEditTalk(row, $index)"><el-icon>
-                            <Edit />
-                        </el-icon>
-                    </el-button>
-                    <el-button v-if="row.isTop === 0" circle plain type="success"
-                        @click="onUpdateTalkTop(row.id, row.isTop)"><el-icon>
-                            <Top />
-                        </el-icon>
-                    </el-button>
-                    <el-button v-else circle plain type="warning"
-                        @click="onUpdateTalkTop(row.id, row.isTop)"><el-icon>
-                            <Bottom />
-                        </el-icon>
-                    </el-button>
-                    <el-button v-if="row.state !== 1" circle plain type="danger"
-                        @click="onDelTalk(row.id, $index)"><el-icon>
-                            <Delete />
-                        </el-icon>
-                    </el-button>
-                    <el-button v-else circle plain type="warning"
-                        @click="onRegainTalk(row.id, $index)"><el-icon>
-                            <Check />
-                        </el-icon>
-                    </el-button>
-                </template>
-            </el-table-column>
-
-            <template #empty>
-                <el-empty description="没有数据"></el-empty>
-            </template>
-        </el-table>
-        <div class="pagination">
-            <el-pagination v-model:current-page="page" :disabled="disabled" :background="background"
-                :page-sizes="[10, 20, 30, 50]" layout="total, sizes, prev, pager, next, jumper" :total="total"
-                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+            </el-table>
         </div>
+
+        <template #pagination>
+            <div class="pagination">
+                <el-pagination v-model:current-page="page" :disabled="disabled" :background="background"
+                    :page-sizes="[10, 20, 30, 50]" layout="total, sizes, prev, pager, next, jumper" :total="total"
+                    @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+            </div>
+        </template>
+
     </page-container>
 
 </template>
@@ -150,7 +154,7 @@ const toEditTalk = (row: any, index: any) => {
         console.log(row.id)
         router.push({
             path: '/talk/create',
-            query: { id: row.id } 
+            query: { id: row.id }
         })
     } else {
         ElMessage.warning('您没有访问此页面的权限');
@@ -184,14 +188,19 @@ onMounted(() => {
 
 
 <style lang="scss" scoped>
-.table {
-    height: 76vh;
+.table-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .table {
+        flex: 1;
+    }
 }
 
 .pagination {
     display: flex;
     justify-content: flex-end;
-    margin-top: 12px;
 }
 
 .table-image-container {

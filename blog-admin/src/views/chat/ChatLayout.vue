@@ -8,20 +8,17 @@
         <el-container>
           <el-header class="chat-header">
             <h1 class="chat-header-name">{{ chating.nickname }}</h1>
-            <div v-if="!userStore.isLogin" class="chat-header-tip">未登录状态下可能会导致聊天记录丢失</div>
           </el-header>
           <el-main class="chat-main">
-            <ChatRecord v-if="chating.chatType === 'single'" :chating="chating" @load-more="onLoadMore"
+            <ChatRecord :chating="chating" @load-more="onLoadMore"
               :has-more="hasMore" ref="chatRef">
             </ChatRecord>
-            <GroupChatRecord v-else-if="chating.chatType === 'group'" :chat-record-list="chating.chatMessageList"
-              @load-more="onLoadMore" :has-more="hasMore" ref="chatRef">
-            </GroupChatRecord>
           </el-main>
           <el-footer class="chat-footer">
-            <ChatInput v-if="chating.chatType === 'single'" :chating="chating">
+            <ChatInput v-if="chating.chatType === 'single'" :chating="chating" ref="chatInputRef">
             </ChatInput>
-            <GroupChatInput v-else-if="chating.chatType === 'group'" :chating="chating"></GroupChatInput>
+            <GroupChatInput v-else-if="chating.chatType === 'group'" :chating="chating" ref="chatInputRef">
+            </GroupChatInput>
           </el-footer>
         </el-container>
       </el-container>
@@ -42,17 +39,18 @@ import ChatRecord from './ChatRecord.vue';
 import GroupChatRecord from './GroupChatRecord.vue';
 import GroupChatInput from './GroupChatInput.vue'
 import ChatList from './ChatList.vue'
-import { getChatListService, getNewChatCountByGroupService, getNewChatCountBySingleService } from '@/api/chat'
+import { getChatListService } from '@/api/chat'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
+import { addWsMessageHandler, removeWsMessageHandler } from '@/utils/websocket'
 
 /* ---------------- stores / router ---------------- */
 const userStore = useUserStore()
 const chatStore = useChatStore()
 const route = useRoute()
 
-
 /* ---------------- reactive state ---------------- */
+const chatInputRef = ref<InstanceType<typeof ChatInput> | InstanceType<typeof GroupChatInput>>()
 const state = reactive({
   /* 当前在看的会话 id */
   currentChatId: '' as string,
@@ -88,69 +86,18 @@ const { chating, unReadMessage, hasMore } = toRefs(state)
 const chatRef = ref()
 const starting = ref(true)
 
-/* ---------------- WebSocket ---------------- */
-let ws: WebSocket | null = null
-let pingTimer: number | null = null
-const host = import.meta.env.VITE_WS_BASE_URL
-
-function openWs() {
-  let token = userStore.refreshToken ? userStore.refreshToken : userStore.deviceId
-  if (ws && ws.readyState === WebSocket.OPEN) return
-  ws = new WebSocket(`${host}/ws?token=${token}`)
-  ws.onopen = () => {
-    pingTimer = window.setInterval(() => ws?.send('ping'), 25_000)
-  }
-  ws.onclose = () => {
-    if (pingTimer) clearInterval(pingTimer)
-  }
-  ws.onmessage = (e) => {
-    /* TODO: 真正收到消息时，直接 push 到对应会话 */
-    try {
-      const body: WsMsg = JSON.parse(e.data)
-      console.log("ws:" + body.receiver)
-      console.log(body)
-      handleWsMessage(body)
-    } catch (err) {
-      console.error('WS 消息格式错误', e.data)
-    }
-  }
-}
-
-function closeWs() {
-  if (ws) {
-    ws.close()
-    ws = null
-  }
-  if (pingTimer) {
-    clearInterval(pingTimer)
-    pingTimer = null
-  }
-}
-
 /* WS 收到消息后统一入口 */
-function handleWsMessage(raw: WsMsg) {
-  const { receiver, message } = raw
+function handleWsMessage(msg: { data: WsMsg }) {
+  const { receiver, message } = msg.data
 
+  console.log("raw:", msg.data)
   /* ---- 1. 当前会话 ---- */
   if (state.currentChatId === receiver) {
     chating.value.chatMessageList.push(message)
     chating.value.lastMessage = message
+    handleScrollToBottom()
+    return
   }
-
-  /* ---- 2. 非当前会话 ---- */
-  const target = chatStore.chatList.find(c => c.id === receiver)
-  if (!target) return
-
-  const lastMsg = target.chatMessageList.at(-1)
-  // 末尾消息与旧 lastMessage 完全相等（id 相同即可）
-  const needUpdateList = lastMsg && lastMsg.id === target.lastMessage.id
-
-  if (needUpdateList) {
-    target.chatMessageList.push(message)
-  }
-  target.lastMessage = message
-  target.unReadChat++
-  handleScrollToBottom()
 }
 
 /* ---------------- 工具函数 ---------------- */
@@ -167,7 +114,11 @@ const clearSelection = () => {
 
 const onMouseDown = (e: MouseEvent) => {
   const block = document.querySelector('.chat-record')
-
+  const chatEmojiBlock = document.querySelector('.emoji-container')
+  const chatEmojiButtonBlock = document.querySelector('.icon-emoji')
+  if (chatEmojiBlock && !chatEmojiBlock.contains(e.target as Node) && chatEmojiButtonBlock && !chatEmojiButtonBlock.contains(e.target as Node)) {
+    chatInputRef.value?.nonEmojiSelect()
+  }
   if (block && !block.contains(e.target as Node)) {
     clearSelection()
   }
@@ -227,7 +178,7 @@ const initSession = (id: string) => {
     }
     return
   }
-
+  target.unReadChat = 0
   state.chating = { ...target, chatMessageList: [...target.chatMessageList] }
 
   loadLatestMessages()
@@ -338,16 +289,16 @@ async function onLoadMore(done: () => void) {
 
 
 /* ---------------- 生命周期 ---------------- */
-onMounted(() => {
-  openWs()
+onMounted(() => { 
   handleMyMessage()
+  addWsMessageHandler('chat', handleWsMessage)
   document.addEventListener('mousedown', onMouseDown)
   starting.value = false
 })
 
 onUnmounted(() => {
   saveSession()
-  closeWs()
+  removeWsMessageHandler('chat', handleWsMessage)
   document.removeEventListener('mousedown', onMouseDown)
 })
 
@@ -380,8 +331,8 @@ watch(
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background: #f5f5f5;
+  height: 100%;
+  background-color: var(--grey-1);
 }
 
 .el-container {
@@ -391,7 +342,7 @@ watch(
 .chat-size {
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  background: #fff;
+
   overflow: hidden;
   width: 990px;
   height: 650px;
@@ -400,7 +351,7 @@ watch(
 .chat-aside {
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #e4e7ed;
+  border-right: 1px solid var(--color-pink-light);
   padding: 12px 0;
   height: 100%;
 }
@@ -410,8 +361,7 @@ watch(
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  border-bottom: 1px solid #e4e7ed;
-  background: #fafafa;
+  border-bottom: 1px solid var(--color-pink-light);
 
   h1 {
     margin: 0;
@@ -428,14 +378,25 @@ watch(
 
 .chat-main {
   padding: 0 0 0 16px;
-  background: #fafafa;
   overflow-y: auto;
 }
 
 .chat-footer {
-  border-top: 1px solid #e4e7ed;
+  border-top: 1px solid var(--color-pink-light);
   padding: 8px 12px;
-  background: #fff;
   height: 152px;
+}
+
+@media (max-width: 767px) {
+  .chat-size {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .chat-aside {
+    display: none;
+  }
 }
 </style>

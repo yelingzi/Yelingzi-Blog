@@ -17,11 +17,25 @@ export const useChatStore = defineStore(
       })
     }
 
-    
+    const addChatByWsMsg = (msg: { receiver: string, messageType: 'single' | 'group',  message: any }): Chat => {
+      const newChat: Chat = {
+        id: msg.receiver,
+        route: msg.receiver,
+        nickname: msg.message.nickname,
+        chatType: msg.messageType,
+        avatar: msg.message.userAvatar,
+        lastMessage: msg.message,
+        unReadChat: 0,
+        chatMessageList: [msg.message],
+      }
+      chatList.value.unshift(newChat)
+      return newChat
+    } 
 
     return {
       chatList,
-      removeUnReadChat
+      removeUnReadChat,
+      addChatByWsMsg
     }
   },
   { persist: true }

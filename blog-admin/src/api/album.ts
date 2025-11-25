@@ -20,7 +20,11 @@ export const addAlbumService = (data: AlbumDTO) => request.post('/api/admin/albu
 
 //删除相册
 export const delAlbumService = (id: any) =>
-    request.delete(`/api/admin/del/${id}`)
+    request.delete(`/api/admin/album/del/${id}`)
+
+//复原
+export const passAlbumService = (id: number) =>
+    request.post(`/api/admin/album/regain`, { id } )
 
 //更新相册
 export const updateAlbumtService = (data: AlbumDTO) => request.post('/api/admin/album/update', data)

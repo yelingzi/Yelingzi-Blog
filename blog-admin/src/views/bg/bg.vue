@@ -9,56 +9,58 @@
             </el-select>
             <el-button @click="onAddBg">添加新的图片</el-button>
         </template>
+        <div class="table-wrapper">
+            <el-table v-loading="loading" :data="bgList" style="width: 100%" class="table"
+                :row-class-name="tableRowClassName">
+                <el-table-column prop="id" label="序号" width="80"></el-table-column>
+                <el-table-column prop="url" label="图片" width="400">
+                    <template #default="{ row }">
+                        <el-image class="cover-image" :src="row.url" fit="cover">
+                            <template #placeholder>
+                                <div class="image-placeholder">加载中...</div>
+                            </template>
+                        </el-image>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="createTime" label="添加时间"></el-table-column>
+                <el-table-column prop="userId" label="ID" width="100"></el-table-column>
+                <el-table-column prop="nickname" label="昵称"></el-table-column>
+                <el-table-column prop="" label="状态" width="100">
+                    <template #default="{ row }">
+                        <el-tag type="primary" v-if="row.state === 0">展示</el-tag>
+                        <el-tag type="danger" v-else-if="row.state === 1">未展示</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" width="120">
+                    <template #default="{ row, $index }">
+                        <el-button v-if="row.state !== 0" circle plain type="primary"
+                            @click="onShowBg(row.id, $index)"><el-icon>
+                                <Check />
+                            </el-icon></el-button>
+                        <el-button v-if="row.state !== 1" circle plain type="danger"
+                            @click="onDelBg(row.id, $index)"><el-icon>
+                                <Delete />
+                            </el-icon></el-button>
+                    </template>
+                </el-table-column>
 
-        <el-table v-loading="loading" :data="bgList" style="width: 100%" class="table"
-            :row-class-name="tableRowClassName">
-            <el-table-column prop="id" label="序号" width="80"></el-table-column>
-            <el-table-column prop="url" label="图片" width="400">
-                <template #default="{ row }">
-                    <el-image class="cover-image" :src="row.url" fit="cover">
-                        <template #placeholder>
-                            <div class="image-placeholder">加载中...</div>
-                        </template>
-                    </el-image>
+                <template #empty>
+                    <el-empty description="没有数据"></el-empty>
                 </template>
-            </el-table-column>
-            <el-table-column prop="createTime" label="添加时间" ></el-table-column>
-            <el-table-column prop="userId" label="ID" width="100"></el-table-column>
-            <el-table-column prop="nickname" label="昵称" ></el-table-column>
-            <el-table-column prop="" label="状态" width="100">
-                <template #default="{ row }">
-                    <el-tag type="primary" v-if="row.state === 0">展示</el-tag>
-                    <el-tag type="danger" v-else-if="row.state === 1">未展示</el-tag>
-                </template>
-            </el-table-column>
-            <el-table-column label="操作" width="120">
-                <template #default="{ row, $index }">
-                    <el-button v-if="row.state !== 0" circle plain type="primary"
-                        @click="onShowBg(row.id, $index)"><el-icon>
-                            <Check />
-                        </el-icon></el-button>
-                    <el-button v-if="row.state !== 1" circle plain type="danger"
-                        @click="onDelBg(row.id, $index)"><el-icon>
-                            <Delete />
-                        </el-icon></el-button>
-                </template>
-            </el-table-column>
-
-            <template #empty>
-                <el-empty description="没有数据"></el-empty>
-            </template>
-        </el-table>
-        <div class="pagination">
-            <el-pagination v-model:current-page="page" :disabled="disabled" :background="background"
-                :page-sizes="[10, 20, 30, 50]" layout="total, sizes, prev, pager, next, jumper" :total="total"
-                @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+            </el-table>
+            <div class="pagination">
+                <el-pagination v-model:current-page="page" :disabled="disabled" :background="background"
+                    :page-sizes="[10, 20, 30, 50]" layout="total, sizes, prev, pager, next, jumper" :total="total"
+                    @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+            </div>
         </div>
+
     </page-container>
     <el-dialog v-model="dialogVisible" title="添加背景图片" :lockScroll="false" width="500" center>
         <div>
             <el-upload class="cover-upload" :on-change="onSelectImage" :before-upload="beforeAvatarUpload"
                 :show-file-list="false" :auto-upload="false">
-                <el-image v-if="imageUrl" :src="imageUrl" class="avatar" fit="cover"/>
+                <el-image v-if="imageUrl" :src="imageUrl" class="avatar" fit="cover" />
                 <el-icon v-else class="avatar-uploader-icon">
                     <Plus />
                 </el-icon>
@@ -206,15 +208,23 @@ onMounted(() => {
 
 
 <style lang="scss" scoped>
-.table {
-    height: 76vh;
+.table-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .table {
+        flex: 1;
+    }
 }
 
 .pagination {
+    margin-top: auto;
+    padding-top: 16px;
+    background: #fff;
+    border-top: 1px solid #e4e7ed;
     display: flex;
     justify-content: flex-end;
-    /* 将内容推到右边 */
-    margin-top: 12px;
 }
 
 :deep(.warning-row) {

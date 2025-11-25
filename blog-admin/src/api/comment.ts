@@ -9,6 +9,16 @@ export const getArticleCommentListByPageService = (page: number, pageSize: numbe
         },
     })
 
+//查看一页文章评论
+export const getArticleCommentListByIdAndPageService = (id: number, page: number, pageSize: number) =>
+    request.get('/api/admin/comment/article/id/page', {
+        params: {
+            articleId: id,
+            page: page,
+            pageSize: pageSize
+        },
+    })
+
 // 删除文章评论
 export const delArticleCommentService = (id: number) =>
     request.post('/api/admin/comment/article/del', { id });

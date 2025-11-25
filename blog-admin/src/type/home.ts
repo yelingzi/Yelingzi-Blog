@@ -9,10 +9,10 @@ export interface HomeStatistics{
     categoryCount:number
 }
 
-export interface ArtAndTalkList{
+export interface ArtAndTalkList {
     id: number
-    type: string
-    createTime: string
+    type: '文章' | '说说'
+    createTime: string 
 }
 
 export interface ViewData{

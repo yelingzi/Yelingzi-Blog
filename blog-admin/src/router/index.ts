@@ -10,7 +10,7 @@ const router = createRouter({
       path: '/layout',
       name: 'layout',
       component: () => import('@/Layout/layout.vue'),
-      children: [] 
+      children: []
     },
     {
       path: '/',
@@ -36,7 +36,7 @@ const router = createRouter({
 let isRoutesInjected = false
 
 export const injectDynamicRoutes = (menuList: MenuList[]) => {
-  if (isRoutesInjected ) return
+  if (isRoutesInjected) return
 
   // 清理旧路由
   const layout = router.getRoutes().find(r => r.name === 'layout')
@@ -50,13 +50,13 @@ export const injectDynamicRoutes = (menuList: MenuList[]) => {
   const processMenu = (menus: MenuList[]) => {
     menus.forEach(menu => {
       if (menu.children?.length) processMenu(menu.children)
-      
+
       // 过滤有效路由项
       if (menu.menuType !== 2 || !menu.path || !menu.component) return
 
       // 创建唯一路由名称
       const routeName = `dynamic_${menu.id}`
-      
+
       // 配置路由记录
       const route: RouteRecordRaw = {
         path: menu.path,
@@ -64,7 +64,8 @@ export const injectDynamicRoutes = (menuList: MenuList[]) => {
         component: resolveComponent(menu.component),
         meta: {
           menuId: menu.id,
-          isDynamic: true
+          isDynamic: true,
+          name: menu.menuName,
         },
         props: menu.path == '/chat/:chatId' ? true : false
       }
@@ -111,18 +112,18 @@ const resolveComponent = (component: string) => {
 //路由守卫
 router.beforeEach(async (to) => {
   const userStore = useUserStore()
-  
+
   if (to.meta.requiresAuth && !userStore.isLogin) {
     return { path: '/login', query: { redirect: to.fullPath } }
   }
 
   if (userStore.isLogin && !isRoutesInjected) {
     injectDynamicRoutes(userStore.menuList)
-    isRoutesInjected = true 
+    isRoutesInjected = true
   }
 
-  if(userStore.isLogin && to.path == '/login'){
-    return { path: '/' }   
+  if (userStore.isLogin && to.path == '/login') {
+    return { path: '/' }
   }
 
 })

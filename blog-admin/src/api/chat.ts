@@ -24,15 +24,17 @@ export const getNewChatCountByGroupService = (parmas: { device: string, id: numb
 }
 
 //发送文字消息
-export const sendSingleMessageService = (parmas: { nickname: string, message: string, toUser: string }) => {
+export const sendMessageService = (parmas: { chatType: string, message: string, toUser: string }) => {
   return request.post('/api/admin/chat/send/single', parmas)
 }
 
-export const sendMessageService = (parmas: { type: string, message: string }) => {
-  return request.post('/api/chat/send', parmas)
+//发送图片消息
+export const sendImageService = (parmas: FormData) => {
+  return request.post('/api/admin/chat/send/image', parmas)
 }
 
-//发送图片消息
-export const sendSingleImageService = (data: FormData) => {
-  return request.post('/api/chat/send/image', data)
+//发送表情消息
+export const sendEmojiService = (parmas: { chatType: string, message: string, toUser: string }) => {
+  return request.post('/api/admin/chat/send/emoji', parmas)
 }
+
