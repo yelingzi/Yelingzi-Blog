@@ -46,15 +46,16 @@ instance.interceptors.response.use(
       if (!isRefreshing) {
         isRefreshing = true
         try {
-          const { data } = await axios.post(import.meta.env.VITE_API_BASE_URL + '/api/token/refresh', {}, {
+          const { data } = await axios.post(import.meta.env.VITE_API_BASE_URL + '/api/auth/refresh', {}, {
             headers: { 'x-refresh-token': user.refreshToken }
           })
-          const { accessToken, refreshToken } = data.data
-          user.setTokens(accessToken, refreshToken)   
+          const { accessToken } = data.data
+          user.setTokens(accessToken, user.refreshToken)   // 只更新短 Token
 
+          /* 重放队列里所有等待请求 */
           requests.forEach(cb => cb(accessToken))
           requests = []
-          return instance(config!)      
+          return instance(config!)        // 重放原请求
         } catch (refreshErr: any) {
           /* 长 Token 也失效 */
           if (refreshErr.response?.status === 401) {
@@ -79,9 +80,10 @@ instance.interceptors.response.use(
     }
 
     /* 其他 401 / 500 统一处理 */
-    if (response?.status === 401 && (response.data as any)?.msg === 'login') {
+    if (response?.status === 401 && (response.data as any)?.msg === 'accessTokenInvalid') {
       user.removeToken()
       router.push('/login')
+      return
     }
     ElMessage.error((response?.data as any)?.msg || '服务异常')
     return Promise.reject(err)

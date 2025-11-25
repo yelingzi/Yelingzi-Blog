@@ -1,129 +1,156 @@
 <template>
-    <div class="search-container">
-        <div class="container-left">
-            <div class="item">
-                <div class="text">时间：</div>
-                <el-date-picker v-model="date" type="daterange" range-separator="到" start-placeholder="开始时间"
-                    end-placeholder="结束时间" :disabled-date="disabledFuture" @change="handleDateChange" />
-            </div>
-            <div class="item">
-                <div class="text">标题 ：</div>
-                <el-autocomplete v-model="content" :fetch-suggestions="querySearch" clearable placeholder="选择查找的标题"
-                    @select="handleSelect" :debounce="600" style="width: 220px" />
-            </div>
-            <div class="item">
-                <div class="text">状态 ：</div>
-                <el-select v-model="state" placeholder="选择状态" style="width: 140px">
-                    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-            </div>
-        </div>
-        <div class="container-right">
-            <el-button class="search-btn" type="warning" @click="clearSearch">清空</el-button>
-            <el-button class="search-btn" type="primary" @click="handleSearch">查询</el-button>
-        </div>
-
+  <div class="container">
+    <div class="header">
+      <div class="title">{{ t('search') }}</div>
+      <SvgIcon name="icon-close1" size="32" class="icon pointer" @click.stop="onClose()" />
     </div>
+    <div class="search-wrapper">
+      <div class="search-container">
+        <div class="search-input">
+          <input class="input text" v-pio="{ text: '输入想要搜索的内容吧' }" v-model="content" @keyup.enter="search"
+            :placeholder="t('seachInput')" />
+          <button class="send pointer" @click="search">
+            <SvgIcon name="icon-Search" class="serach-icon" size="32" />
+          </button>
+        </div>
+      </div>
+      <div class="search-results">
+        <SearchArticle v-if="searchContent" :search="searchContent" @navigate="handleArticleNavigate" />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { searchArticleTitleListService } from '@/api/article';
-import dayjs from 'dayjs';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { t } from '@/utils/i18n'
+import SearchArticle from './SearchArticle.vue';
+import { useRouter } from 'vue-router';
 
-const emit = defineEmits<{
-    onSearch: [data: { title: string; date: string[] | Date[]; state: string }]
-}>()
+const router = useRouter()
 
+const emit = defineEmits(['close']);
 const content = ref('')
-const date = ref<Date[]>([])
-const state = ref('')
+const searchContent = ref('')
 
-const options = [
-    {
-        value: '0',
-        label: '正常',
-    },
-    {
-        value: '1',
-        label: '删除',
-    },
-    {
-        value: '2',
-        label: '保存',
-    }
-]
-
-const handleDateChange = (val: string | any[]) => {
-  if (val && val.length === 2) {
-    const [start, end] = val
-    
-    const adjustedStart = dayjs(start).startOf('day').toDate()
-    const adjustedEnd = dayjs(end).endOf('day').toDate()
-    
-    date.value = [adjustedStart, adjustedEnd]
-    
+const onClose = () => {
+  emit('close')
+}
+const handleKeyClose = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    emit('close')
   }
 }
-
-const disabledFuture = (time: { getTime: () => number; }) => {
-    return time.getTime() > Date.now()
+const search = () => {
+  searchContent.value = content.value
 }
-
-const querySearch = async (queryString: string, cb: any) => {
-    const res = await searchArticleTitleListService(queryString)
-    const restaurants = res.data.data
-    const results = queryString ? restaurants.filter((r: { value: string | string[]; }) => r.value.indexOf(queryString) === 0) : restaurants
-    cb(results)
+const handleArticleNavigate = (id: number) => {
+  router.push({ name: 'article', params: { id } })
+  setTimeout(() => {
+    onClose()
+  }, 300)
 }
-
-const handleSelect = (item: Record<string, any>) => {
-    console.log('选择的标题：', item.value)
-}
-
-const clearSearch = () => {
-    content.value = ''
-    date.value = []
-    state.value = ''
-    emit('onSearch', { title: '', date: [], state: '' })
-}
-
-const handleSearch = () => {
-    emit('onSearch', { title: content.value, date: date.value, state: state.value })
-}
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyClose)
+})
 
 </script>
 
 <style lang="scss" scoped>
-.search-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    background-color: #fff;
-    border-radius: 12px;
-
-
-    .container-left {
-        display: flex;
-        gap: 32px;
-        justify-content: flex-start;
-
-        .text {
-            min-width: 60px;
-            font-size: 18px;
-        }
-
-        .item {
-            display: flex;
-            align-items: center;
-        }
-
-
-    }
+.container {
+  padding: 20px 0;
+  width: 100%;
+  background-color: var(--article-bg);
+  min-height: 100vh;
+  /* 改为min-height确保内容不足时也能撑开 */
 }
 
-.search-btn {
-    width: 80px;
+.search-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 60px;
+  position: relative;
+}
+
+.title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 32px;
+  font-weight: 500;
+  margin: 0 auto;
+}
+
+.icon {
+  margin-left: auto;
+  color: #ff7575;
+}
+
+.search-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 36px;
+}
+
+.search-input {
+  display: flex;
+  align-items: center;
+  background-color: #ff7575;
+  border-radius: 10px;
+  box-shadow: 0 6px 15px #ff7575, 0 0 0 10px #fff;
+  width: 600px;
+  padding: 7px 20px;
+}
+
+.search-input .input {
+  width: 80%;
+  flex: 1;
+  height: 38px;
+  font: 200 22px;
+  outline: none;
+  color: #fff;
+  background-color: transparent;
+}
+
+.search-input .input::placeholder {
+  color: #8f3636;
+}
+
+.search-input .send {
+  height: 40px;
+  background-color: transparent;
+  border: none;
+}
+
+.search-input .send .serach-icon {
+  color: #F78EE4;
+}
+
+.search-results {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+@media (max-width: 767px) {
+  .search-input {
+    width: 100%;
+  }
+
+  .header {
+    padding-right: 30px;
+  }
 }
 </style>

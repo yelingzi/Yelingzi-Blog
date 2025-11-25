@@ -1,6 +1,6 @@
 <!-- ImageWithFallback.vue -->
 <template>
-  <el-image class="cover" :src="props.src" :lazy="props.lazy" fit="cover">
+  <el-image :src="props.src" :lazy="props.lazy" fit="cover" :alt="props.alt">
     <template #placeholder>
       <div class="image-slot">Loading<span class="dot">...</span></div>
     </template>
@@ -20,12 +20,15 @@ interface Props {
   src: string
   fallback?: string
   lazy?: boolean
+  alt?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   fallback: defaultFallback,
-  lazy: true
+  lazy: true,
+  alt: 'image'
 })
+
 </script>
 
 <style lang="scss" scoped>

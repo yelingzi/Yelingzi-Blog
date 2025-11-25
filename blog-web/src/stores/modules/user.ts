@@ -1,86 +1,134 @@
-import { injectDynamicRoutes } from '@/router'
-import type { MenuList } from '@/type/user'
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-
-export interface UserInfo {
-  userId: number
-  email: string
-  nickname: string
-  userAvatar: string
-}
+import avatar from '@/assets/images/default.png'
+import { computed, reactive, ref } from 'vue'
 
 export const useUserStore = defineStore(
   'userStore',
   () => {
-    // 使用独立 ref 替代嵌套的 reactive 对象
-    const userInfo = ref<UserInfo>({
-      userId: 0,
-      email: '',
-      nickname: '',
-      userAvatar: ''
-    })
-    const isLogin = ref(false)
-    const menuList = ref<MenuList[]>([])
+    // 用户信息
+    const userInfo = ref({
+      id: -1,
+      email: '123456@123.com',
+      nickname: '游客',
+      userAvatar: avatar,
+    });
+
+    // 用户状态
+    const lastShowWeb = ref('')
     const accessToken = ref('')
     const refreshToken = ref('')
-    const deviceId = ref('')
-    
 
-    // 操作方法
+    // 网站信息
+    const webSiteInfo = ref({
+      showList: [],
+    });
+
+    //访问信息
+    const viewDate = ref()
+    const isFirstView = ref(true)
+    const deviceId = ref('')
+
+    //文章主题
+    const previewTheme = ref('')
+
+
     const removeToken = () => {
       accessToken.value = ''
       refreshToken.value = ''
+      removeUserState()
     }
     const setTokens = (at: string, rt: string) => {
       accessToken.value = at
       refreshToken.value = rt
     }
 
+    // 移除用户状态
     const removeUserState = () => {
-      userInfo.value = { userId: 0, email: '', nickname: '', userAvatar: '' }
-      isLogin.value = false
-    }
+      userInfo.value.id = -1;
+      userInfo.value.nickname = '游客' + deviceId.value;
+      userInfo.value.userAvatar = avatar;
+    };
 
-    const setUserState = (user: UserInfo & { login: boolean }) => {
-      userInfo.value = { ...user }
-      isLogin.value = user.login
-    }
+    // 设置用户状态
+    const setUserState = (userData: {
+      id: number;
+      nickname: string;
+      userAvatar: string;
+    }) => {
+      userInfo.value.id = userData.id;
+      userInfo.value.nickname = userData.nickname;
+      userInfo.value.userAvatar = userData.userAvatar;
+      viewDate.value = undefined
+    };
 
-    const setMenuList = (menu: MenuList[]) => {
-      menuList.value = menu
-    }
 
-    const clearMenuList = () => {
-      menuList.value = []
-    }
+    // 获取是否登录
+    const getIsLogin = () => {
+      return accessToken.value != '' ? true : false;
+    };
 
-    const addRoute = () =>{
-      if(isLogin.value && userInfo.value && menuList.value){
-        injectDynamicRoutes(menuList.value)
+    // 设置最后显示的网页
+    const setLastShowWeb = (url: string) => {
+      lastShowWeb.value = url;
+    };
+
+    // 获取最后显示的网页
+    const getLastShowWeb = () => {
+      return lastShowWeb.value;
+    };
+
+    // 获取用户状态（组合）
+    const getUserStateCombined = computed(() => {
+      return {
+        ...userInfo,
+        ...lastShowWeb,
+      };
+    });
+
+    const checkIsFirstView = () => {
+      if (!isFirstView.value && deviceId.value) {
+        return
       }
+
+      // 只有在没有 deviceId 时才生成新的
+      if (!deviceId.value) {
+        deviceId.value = crypto.randomUUID().replace(/-/g, '').substring(0, 14)
+        userInfo.value.nickname = '游客' + deviceId.value
+      }
+      isFirstView.value = false
+    }
+
+    const setViewDate = (date: Date | string) => {
+      viewDate.value = date
+    }
+
+    const setPreviewTheme = (theme: string) => {
+      previewTheme.value = theme
     }
 
     return {
-      // 状态
-      userInfo,
-      isLogin,
-      menuList,
-      accessToken,
-      refreshToken,
-      deviceId,
-
-      // 方法
       removeToken,
-      setTokens,
       removeUserState,
       setUserState,
-      setMenuList,
-      clearMenuList,
-      addRoute
-    }
+      getIsLogin,
+      setLastShowWeb,
+      getLastShowWeb,
+      setTokens,
+      setViewDate,
+      checkIsFirstView,
+      setPreviewTheme,
+      previewTheme,
+      webSiteInfo,
+      lastShowWeb,
+      getUserStateCombined,
+      userInfo,
+      viewDate,
+      deviceId,
+      accessToken,
+      refreshToken
+    };
   },
   {
-    persist: true
-  }
-)
+    persist: true,
+  },
+);

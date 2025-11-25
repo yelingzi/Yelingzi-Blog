@@ -30,9 +30,12 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import YlButton from '@/components/Button/YlButton.vue';
-import { sendEmojiService, sendMessageService } from '@/api/chat';
+import type { ChatMessage } from '@/types/chatType';
+import { sendEmojiMessageService, sendMessageService } from '@/api/chat';
+import { useUserStore } from '@/stores';
 import { ElMessage } from 'element-plus';
 
+const userStore = useUserStore()
 const emit = defineEmits<{
   scrollToBottom: []
 }>()
@@ -67,7 +70,7 @@ const send = async () => {
     return
   }
   try {
-    await sendMessageService({ chatType: 'group', message: content.value, toUser: '' })
+    await sendMessageService({ type: 'group', message: content.value }, userStore.deviceId)
     emit('scrollToBottom')
   } finally {
     remove()
@@ -92,7 +95,7 @@ const nonEmojiSelect = () => {
 const handleEmojiSelect = async (emoji: string) => {
 
   emojiVisible.value = false
-  await sendEmojiService({ chatType: 'group', message: emoji ,toUser: ''})
+  await sendEmojiMessageService({ type: 'group', message: emoji }, userStore.deviceId)
   onSendSuccess()
 }
 const onSendSuccess = () => {
@@ -169,7 +172,6 @@ defineExpose({
   display: flex;
   align-items: center;
   width: 100%;
-  border: none;
 }
 
 .input-button {

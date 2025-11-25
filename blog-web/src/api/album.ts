@@ -1,44 +1,15 @@
-import type { AlbumDTO, PhotoDTO } from '@/type/album'
 import request from '@/utils/request'
 
+export const getAlbumListService = () => request.get('/api/album/list')
 
-//添加相册封面
-export const uploadAlbumCoverService = (data: FormData) => request.post('/api/admin/album/upload/cover', data)
+export const getSimpleAlbumOfPhotoCountService = () => request.get('/api/album/photo/count')
 
-
-//查看相册
-export const getAlbumListByPageService = (page: number, pageSize: number) => 
-    request.get('/api/admin/album/page', {
+export const getAlbumDataService = (album: number) => request.get('/api/album/data',
+  {
     params: {
-      page: page,
-      pageSize: pageSize
+      albumID: album,
     },
-  })
+  }
+)
 
-//添加相册
-export const addAlbumService = (data: AlbumDTO) => request.post('/api/admin/album/add', data)
-
-//删除相册
-export const delAlbumService = (id: any) =>
-    request.delete(`/api/admin/album/del/${id}`)
-
-//复原
-export const passAlbumService = (id: number) =>
-    request.post(`/api/admin/album/regain`, { id } )
-
-//更新相册
-export const updateAlbumtService = (data: AlbumDTO) => request.post('/api/admin/album/update', data)
-
-//查看一个相册
-export const getAlbumByIdService = (albumID: number) => 
-  request.get('/api/album/data', {
-  params: {
-    albumID: albumID,
-  },
-})
-
-//查看相册
-export const getAlbumListService = () => request.get('/api/admin/album/list')
-
-//添加图片到相册
-export const addPhotoToAlbumService = (data: PhotoDTO) => request.post('/api/admin/album/photo/add', data)
+export const getBgListService = () => request.get('/api/background/list')

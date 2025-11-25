@@ -47,7 +47,6 @@ defineEmits<{
   color: var(--white);
   font-size: 14px;
   overflow: hidden;
-  border: none;
 
   div {
     cursor: inherit;

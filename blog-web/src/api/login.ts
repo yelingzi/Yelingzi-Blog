@@ -1,5 +1,10 @@
 import request from '@/utils/request'
 
+//注册接口
+export const userRegisterService = (row: { email: string; password: string; verifyCode: string }) => {
+  return request.post('/api/reg', row)
+}
+
 //登录接口
 export const userLoginService = (row: {
   email: string
@@ -7,7 +12,12 @@ export const userLoginService = (row: {
   verifyCodeKey: string
   verifyCode: string
 }) => {
-  return request.post('/api/login/admin', row)
+  return request.post('/api/login', row)
+}
+
+//登录接口
+export const userVerifyCodeLoginService = (row: { email: string; verifyCode: string }) => {
+  return request.post('/api/login/email', row)
 }
 
 //获取用户的基本信息
@@ -26,13 +36,13 @@ export const userInfoService = () => request.get('/api/user/info')
 
 //更新用户的基本信息
 export const setUserInfoService = (row: {
-  userName: string
-  niCheng: string
+  email: string
+  nickname: string
   userAvatar: string
 }) => request.post('/api/user/info/update', row)
 
-//获取验证码
-export const getEmailVerifyCodeService = (row: { email: string }) =>
+//获取注册验证码
+export const getRegEmailVerifyCodeService = (row: { email: string }) =>
   request.get('/api/email/reg', {
     params: {
       email: row.email,
@@ -47,5 +57,28 @@ export const getLoginEmailVerifyCodeService = (row: { email: string }) =>
     },
   })
 
-//获取菜单栏
-export const userMenuListService = () => request.get('/api/admin/menu')
+export const viewService = (device: string) => request.get('/api/view', {
+  headers: { 'x-host': device }
+})
+
+//获取忘记密码验证码
+export const getForgetEmailVerifyCodeService = (row: { email: string }) =>
+  request.get('/api/email/forget', {
+    params: {
+      email: row.email,
+    },
+  })
+
+//忘记密码接口
+export const userForgetVerifyCodeService = (row: { email: string; verifyCode: any }) => {
+  return request.post('/api/forget', row)
+}
+
+//重置密码接口
+export const resetPasswardService = (row: {
+  email: string
+  password: string
+  passwordKey: string
+}) => {
+  return request.post('/api/reset', row)
+}

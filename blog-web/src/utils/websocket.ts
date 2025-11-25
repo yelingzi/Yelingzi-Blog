@@ -32,7 +32,7 @@ function handleWsMessage(msg: { messageType: string; data: any }) {
     console.warn(`[WS] 未注册 messageType="${messageType}" 的处理器`)
     return
   }
-  handlers.forEach(fn => fn(msg))
+  handlers.forEach(fn => fn(data))
 }
 
 /* ---------- WebSocket 实例 ---------- */
@@ -70,6 +70,7 @@ export async function openWs() {
     ws.onmessage = (event: MessageEvent) => {
       try {
         const body = JSON.parse(event.data)
+        console.log(body)
         handleWsMessage(body)
       } catch (e) {
         console.error('WS 消息格式错误', event.data)

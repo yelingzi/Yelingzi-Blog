@@ -11,21 +11,24 @@
         <!-- 时间居中显示，小于3分钟不重复显示 -->
         <div class="chat-record-time" v-if="chat.showTime">{{ chat.formattedTime }}</div>
         <!-- 自己消息，显示在右边 -->
-        <div class="chat-record-right" v-if="chat.userId === userInfo.userId || chat.nickname === userInfo.nickname">
+        <div class="chat-record-right" v-if="chat.userId === userInfo.id || chat.nickname === userInfo.nickname">
           <div class="chat-record-content">
             <div class="chat-record-right-nickname">{{ chat.nickname }}</div>
             <div class="chat-record-text user-select" v-if="chat.messageType === 'text'">{{ chat.message }}</div>
+            <ImageMapperComponent v-if="chat.messageType === 'emoji'" class="chat-record-emoji" :text="chat.message" />
           </div>
 
-          <el-avatar class="chat-record-avatar" :src="chat.userAvatar"></el-avatar>
+          <YlAvatar class="chat-record-avatar" :src="chat.userAvatar"></YlAvatar>
         </div>
         <!-- 其他人消息，显示在左边 -->
         <div class="chat-record-left" v-else>
-          <el-avatar class="chat-record-avatar" :src="chat.userAvatar"></el-avatar>
+          <YlAvatar class="chat-record-avatar" :src="chat.userAvatar"></YlAvatar>
           <div class="chat-record-content">
             <div class="chat-record-nickname">{{ chat.nickname }}</div>
             <div class="chat-record-text user-select" v-if="chat.messageType === 'text'">{{ chat.message }}</div>
+            <ImageMapperComponent v-if="chat.messageType === 'emoji'" class="chat-record-emoji" :text="chat.message" />
           </div>
+
         </div>
       </div>
     </div>
@@ -34,9 +37,11 @@
 
 <script lang="ts" setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch, type PropType } from 'vue'
-import type { ChatMessage } from '@/type/chatType'
+import type { ChatMessage } from '@/types/chatType'
 import { useUserStore } from '@/stores'
-import { formatChatDisplayTime } from '@/utils/commom'
+import { formatChatDisplayTime } from '@/utils/common'
+import YlAvatar from '@/components/Image/YlAvatar.vue'
+import ImageMapperComponent from '@/components/Image/ImageMapperComponent.vue'
 
 const userState = useUserStore()
 const userInfo = userState.userInfo
@@ -193,6 +198,18 @@ defineExpose({ lockScroll, restoreScroll, scrollToBottom })
     background: #95ec69;
     color: #000;
     order: -1;
+  }
+}
+
+.chat-record-emoji {
+  padding-top: 12px;
+  width: 180px;
+  height: 180px;
+
+  .el-image {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 }
 

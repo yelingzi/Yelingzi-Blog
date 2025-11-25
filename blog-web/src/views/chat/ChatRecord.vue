@@ -14,11 +14,8 @@
         <!-- 时间居中显示，小于3分钟不重复显示 -->
         <div class="chat-record-time" v-if="chat.showTime">{{ chat.formattedTime }}</div>
         <!-- 自己消息，显示在右边 -->
-        <div class="chat-record-right" v-if="chat.userId === userInfo.userId || chat.nickname === userInfo.nickname">
+        <div class="chat-record-right" v-if="chat.userId === userInfo.id || chat.nickname === userInfo.nickname">
           <div class="chat-record-content">
-            <text v-if="chating.chatType === 'group'" class="text-nickname-right">
-							{{ chat.nickname }}
-						</text>
             <div class="chat-record-text user-select" v-if="chat.messageType === 'text'">{{ chat.message }}</div>
             <div class="chat-record-image" v-if="chat.messageType === 'image'">
               <ImageWithFallback :src="chat.message" />
@@ -26,17 +23,14 @@
             <div class="chat-record-emoji" v-if="chat.messageType === 'emoji'">
               <ImageMapperComponent :text="chat.message" />
             </div>
-            
-          </div> 
-          <yl-avatar class="chat-record-avatar" :src="userState.userInfo.userAvatar"></yl-avatar>
+          </div>
+
+          <YlAvatar class="chat-record-avatar" :src="userState.userInfo.userAvatar"></YlAvatar>
         </div>
         <!-- 其他人消息，显示在左边 -->
         <div class="chat-record-left" v-else>
-          <yl-avatar class="chat-record-avatar" :src="props.chating.avatar"></yl-avatar>
+          <YlAvatar class="chat-record-avatar" :src="props.chating.avatar"></YlAvatar>
           <div class="chat-record-content">
-            <text v-if="chating.chatType === 'group'" class="text-nickname">
-							{{ chat.nickname }}
-						</text>
             <div class="chat-record-text user-select" v-if="chat.messageType === 'text'">{{ chat.message }}</div>
             <div class="chat-record-image" v-if="chat.messageType === 'image'">
               <ImageWithFallback :src="chat.message" />
@@ -53,12 +47,12 @@
 
 <script lang="ts" setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch, type PropType } from 'vue'
-import type { Chat } from '@/type/chatType'
+import type { Chat, ChatMessage } from '@/types/chatType'
 import { useUserStore } from '@/stores'
-import { formatChatDisplayTime } from '@/utils/commom'
+import { formatChatDisplayTime } from '@/utils/common'
 import ImageWithFallback from '@/components/Image/ImageWithFallback.vue'
-import ImageMapperComponent from '@/components/Image/ImageMapperComponent.vue'
 import YlAvatar from '@/components/Image/YlAvatar.vue'
+import ImageMapperComponent from '@/components/Image/ImageMapperComponent.vue'
 
 const userState = useUserStore()
 const userInfo = userState.userInfo
@@ -202,7 +196,6 @@ defineExpose({ lockScroll, restoreScroll, scrollToBottom })
   overflow-y: auto !important;
   scrollbar-width: auto;
   -ms-overflow-style: auto;
-  scrollbar-width: auto;
   scrollbar-color: #c4c4c4 transparent;
 }
 
@@ -229,23 +222,11 @@ defineExpose({ lockScroll, restoreScroll, scrollToBottom })
   }
 
   .chat-record-content {
-    // display: flex;
-    // flex-direction: column;
-    // justify-content: flex-end;
-    // align-items: flex-end;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     max-width: 60%;
   }
-}
-
-.text-nickname-right {
-	margin-bottom: 4px;
-  align-items: flex-end;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.text-nickname {
-	margin-bottom: 4px;
 }
 
 .chat-record-left {
@@ -267,16 +248,7 @@ defineExpose({ lockScroll, restoreScroll, scrollToBottom })
     max-width: 60%;
   }
 }
-.chat-record-emoji {
-  width: 180px;
-  height: 180px;
 
-  .el-image {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-}
 .chat-record {
   margin-bottom: 12px;
 }
@@ -306,6 +278,17 @@ defineExpose({ lockScroll, restoreScroll, scrollToBottom })
   border-radius: 12px;
   min-width: 320px;
   min-height: 180px;
+
+  .el-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.chat-record-emoji {
+  width: 180px;
+  height: 180px;
 
   .el-image {
     display: block;

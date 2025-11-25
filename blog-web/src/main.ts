@@ -1,32 +1,46 @@
-// main.ts
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
+
+import '@/assets/styles/index.scss'
 import App from './App.vue'
 import router from './router'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import Vue3DraggableResizable from 'vue3-draggable-resizable'
+import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css'
+import directive from './utils/directive'
+import '@/assets/iconfont/iconfont.js'
+
+
 import { createPersistedState } from 'pinia-plugin-persistedstate'
-import '@/assets/styles/main.scss'
+import { useI18nStore } from './stores'
+const loading = document.getElementById('Loading');
+if (loading) loading.style.display = 'flex';
 
 const pinia = createPinia()
 pinia.use(createPersistedState({
-  storage: localStorage, 
+  storage: localStorage,
   auto: true
 }))
-const app = createApp(App)
 
+const app = createApp(App)
+directive(app)
+app.use(pinia)
+app.use(router)
 app.use(ElementPlus, {
   locale: zhCn,
 })
-for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component)
-}
-app.use(pinia)
-import { useUserStore } from './stores'
-useUserStore().addRoute()
+app.use(Vue3DraggableResizable)
 
-app.use(router)
+const i18nStore = useI18nStore()
+await i18nStore.initAppLang()
 
 app.mount('#app')
+
+window.addEventListener('load', () => {
+  if (loading) loading.style.display = 'none';
+});
+
+

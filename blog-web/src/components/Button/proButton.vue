@@ -47,7 +47,7 @@ defineEmits<{
   width: var(--btn-width, 66px);
   height: 33px;
   border-radius: 4px;
-  color: var(--white);
+  color: var(--color-white);
   font-size: 14px;
   overflow: hidden;
 }

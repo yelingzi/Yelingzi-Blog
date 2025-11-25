@@ -1,16 +1,38 @@
-<!-- App.vue -->
 <template>
-  <RouterView />
+  <I18nProvider>
+    <RouterView></RouterView>
+  </I18nProvider>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { RouterView } from 'vue-router'
+import { init } from './init';
+import I18nProvider from './components/Language/I18nProvider.vue';
+import { onMounted, onUnmounted } from 'vue'
+import { openWs, closeWs } from '@/utils/websocket'
+
+onMounted(async () => {
+
+  init()
+  console.log(
+    "   __     ________ _      _____ _   _  _____ ___________ \n" +
+    "   \\ \\   / /  ____| |    |_   _| \\ | |/ ____|___  /_   _|\n" +
+    "    \\ \\_/ /| |__  | |      | | |  \\| | |  __   / /  | |  \n" +
+    "     \\   / |  __| | |      | | | . ` | | |_ | / /   | |  \n" +
+    "      | |  | |____| |____ _| |_| |\\  | |__| |/ /__ _| |_ \n" +
+    "      |_|  |______|______|_____|_| \\_|\\_____/_____|_____|"
+  );
+  openWs()
+})
+onUnmounted(() => {
+  closeWs()
+})
+
 </script>
 
-<style lang="scss" scoped>
-body, html {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+<style lang="scss">
+/** 用于加载全局变量 */
+.svg-icon use {
+  fill: currentColor !important;
 }
 </style>
