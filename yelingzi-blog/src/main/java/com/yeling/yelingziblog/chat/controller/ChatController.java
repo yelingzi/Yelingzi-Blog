@@ -2,6 +2,7 @@ package com.yeling.yelingziblog.chat.controller;
 
 import com.yeling.yelingziblog.chat.dto.NewMessageCountDto;
 import com.yeling.yelingziblog.chat.service.ChatService;
+import com.yeling.yelingziblog.chat.vo.request.ChatImageMessageReq;
 import com.yeling.yelingziblog.chat.vo.request.ChatMessageReq;
 import com.yeling.yelingziblog.chat.vo.request.MessageListReq;
 import com.yeling.yelingziblog.chat.vo.request.SendMessageReq;
@@ -81,7 +82,27 @@ public class ChatController {
                                               HttpServletRequest request) {
 
         User user = UserContext.getUser();
-        chatService.adminSendSingleMessage(user, chatMessageReq.getMessage(), IpUtils.getIpAddr(request), chatMessageReq.getToUser());
+        chatService.adminSendSingleMessage(user, chatMessageReq.getMessage(), IpUtils.getIpAddr(request), chatMessageReq.getToUser(), chatMessageReq.getChatType());
+
+        return ApiResponse.success();
+    }
+
+    @PostMapping("/api/admin/chat/send/image")
+    public ApiResponse adminSendImageMessage(@ModelAttribute ChatImageMessageReq chatMessageReq,
+                                              HttpServletRequest request) {
+
+        User user = UserContext.getUser();
+        chatService.adminSendImageMessage(user, chatMessageReq.getMessage(), IpUtils.getIpAddr(request), chatMessageReq.getToUser());
+
+        return ApiResponse.success();
+    }
+
+    @PostMapping("/api/admin/chat/send/emoji")
+    public ApiResponse adminSendEmojiMessage(@RequestBody ChatMessageReq chatMessageReq,
+                                              HttpServletRequest request) {
+
+        User user = UserContext.getUser();
+        chatService.adminSendEmojiMessage(user, chatMessageReq.getMessage(), IpUtils.getIpAddr(request), chatMessageReq.getToUser(), chatMessageReq.getChatType());
 
         return ApiResponse.success();
     }

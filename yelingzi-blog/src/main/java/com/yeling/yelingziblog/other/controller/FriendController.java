@@ -37,7 +37,7 @@ public class FriendController {
         User user = new User();
 
         user.setId(0);
-        user.setEmail("游客");
+        user.setNickname("游客");
 
         log.info("新增友链, 用户ID：{}, 名:{}", Objects.requireNonNull(user).getId(), user.getNickname());
 

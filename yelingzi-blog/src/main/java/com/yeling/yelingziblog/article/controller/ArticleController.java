@@ -1,5 +1,7 @@
 package com.yeling.yelingziblog.article.controller;
 
+import com.yeling.yelingziblog.article.entity.ArticleLike;
+import com.yeling.yelingziblog.article.vo.response.StatArticleListResp;
 import com.yeling.yelingziblog.user.entity.User;
 import com.yeling.yelingziblog.article.entity.ArticleComment;
 import com.yeling.yelingziblog.article.entity.ArticleCommentInfo;
@@ -359,19 +361,6 @@ public class ArticleController {
     }
 
 
-//    @CrossOrigin(origins = "http://localhost:5173")
-//    @GetMapping("/api/user/article/page")
-//    public  Result userGetArticle(@RequestParam Integer num, @RequestParam String classify, @RequestHeader("Authorization") String jwtToken)
-//    {
-//
-//        log.info("获取文章第{}页，类型为{}",num,classify);
-//        List<ArticleInfo> article = articleService.getUserPageArticle(num,classify,jwtToken);
-//        if(article.isEmpty()){
-//            return Result.error("获取失败");
-//        }
-//        return Result.success(article);
-//    }
-
     @GetMapping ("/api/user/article/like")
     public ApiResponse getArticleLike(@RequestParam Integer id){
 
@@ -505,5 +494,56 @@ public class ArticleController {
         return ApiResponse.success(num);
 
     }
+
+    /**
+     * 获取文章点赞数排行
+     */
+    @GetMapping ("/api/article/like/rank")
+    public ApiResponse getLikeCountRank(){
+        List<StatArticleListResp> articles = articleService.getLikeCountRank();
+
+        return ApiResponse.success(articles);
+
+    }
+
+    /**
+     * 获取文章浏览量排行
+     */
+    @GetMapping ("/api/article/view/rank")
+    public ApiResponse getViewCountRank(){
+        List<StatArticleListResp> articles = articleService.getViewCountRank();
+
+        return ApiResponse.success(articles);
+
+    }
+
+    /**
+     * 获取文章评论数排行
+     */
+    @GetMapping ("/api/article/comment/rank")
+    public ApiResponse getCommentCountRank(){
+        List<StatArticleListResp> articles = articleService.getCommentCountRank();
+
+        return ApiResponse.success(articles);
+
+    }
+
+    /**
+     * 根据文章Id获取一页文章点赞列表
+     */
+    @GetMapping(value = "/api/admin/article/id/like/page")
+    public ApiResponse getArticleCategoryListByIdAndPage(@RequestParam int articleId,
+                                                         @RequestParam int page,
+                                                         @RequestParam int pageSize) {
+        User user = UserContext.getUser();
+
+        log.info("获取文章:{}评论列表，页数{},大小：{}，管理员Id：{},邮箱:{}", articleId, page, pageSize, Objects.requireNonNull(user).getId(),user.getEmail());
+
+        PageResult<ArticleLike> pageResult = articleService.getArticleLikeListByIdAndPage(articleId, page, pageSize);
+
+        return ApiResponse.success(pageResult);
+    }
+
+
 
 }

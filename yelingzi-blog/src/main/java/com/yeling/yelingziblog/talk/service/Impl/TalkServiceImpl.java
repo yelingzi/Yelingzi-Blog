@@ -11,6 +11,7 @@ import com.yeling.yelingziblog.talk.service.TalkService;
 import com.yeling.yelingziblog.common.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,20 +25,15 @@ import java.util.stream.Collectors;
 @Service
 public class TalkServiceImpl implements TalkService {
 
-    @Value("${file.upload.savePath}")
-    private String savePath;
-
-    @Value("${file.upload.relativePath}")
-    private String relativePath;
-
-    @Value("${file.upload.allowedTypes:image/jpg,image/jpeg,image/png}")
-    private String allowedTypes;
 
     @Value("${file.upload.maxSize:2097152}") // 默认最大2MB
     private long maxSize;
 
     @Autowired
     private TalkMapper talkMapper;
+
+    @Autowired
+    private ImageUtils imageUtils;
 
     @Override
     public void addTalk(TalkReq talkReq, User user){
@@ -56,7 +52,7 @@ public class TalkServiceImpl implements TalkService {
     }
 
     @Override
-    public PageResult<Talk> getTalkListByPage(Integer page, Integer pageSize){
+    public PageResult<Talk> getTalkListByPage(Integer page, Integer pageSize, Integer userId){
         PageResult<Talk> pageResult = new PageResult<>();
         pageResult.setPageSize(pageSize);
         pageResult.setPage(page);
@@ -73,10 +69,11 @@ public class TalkServiceImpl implements TalkService {
 
     @Override
     public String uploadTalkImage(MultipartFile multipartFile){
-        return ImageUtils.uploadImage(multipartFile, "/talk", savePath, relativePath, allowedTypes, maxSize);
+        return imageUtils.uploadImage(multipartFile, "/talk", maxSize);
     }
 
     @Override
+    @Cacheable(value = "talk:page", key = "'p:'+#page+':ps:'+#pageSize")
     public PageResult<TalkResp> getTalkList(int page, int pageSize){
 
         PageResult<TalkResp> pageResult = new PageResult<>();
@@ -127,6 +124,7 @@ public class TalkServiceImpl implements TalkService {
     }
 
     @Override
+    @Cacheable(value = "talk:id", key = "#id")
     public TalkResp getTalkById(int id) {
         Talk talk = talkMapper.findTalkById(id);
         if (talk == null) {
@@ -162,6 +160,7 @@ public class TalkServiceImpl implements TalkService {
     }
 
     @Override
+    @Cacheable(value = "talk:top")
     public List<SimpleTalkResp> getTopTalkList(){
         List<SimpleTalkResp> list = talkMapper.findTopTalkList(3);
         if(list.size() < 3){

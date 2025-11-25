@@ -18,7 +18,7 @@ public interface TalkService {
 
     void regainTalk(Integer id);
 
-    PageResult<Talk> getTalkListByPage(Integer page, Integer pageSize);
+    PageResult<Talk> getTalkListByPage(Integer page, Integer pageSize, Integer userId);
 
     void updateTalk(TalkReq talkReq, User user);
 

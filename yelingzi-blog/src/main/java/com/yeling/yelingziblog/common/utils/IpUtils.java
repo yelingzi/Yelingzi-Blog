@@ -3,10 +3,8 @@ package com.yeling.yelingziblog.common.utils;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson2.JSONObject;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.extern.slf4j.Slf4j;
-import org.lionsoul.ip2region.xdb.Searcher;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
@@ -16,22 +14,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
 @Slf4j
 @Service
 public class IpUtils {
 
     private static final String IPV4_PATTERN =
             "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0]|[01]?[0-9][0-9]?)$";
-    private final Searcher searcher;
-
-    @Autowired
-    public IpUtils(Searcher searcher) {
-        this.searcher =  searcher;
-    }
 
     public static String getIpAddr(HttpServletRequest request) {
         //获取请求头"x-forwarded-for"对应的value
@@ -119,71 +107,6 @@ public class IpUtils {
             log.warn("发送HTTP请求失败", e);
             return "未知";
         }
-    }
-
-
-
-    /**
-     * 根据IP地址查询地理位置信息
-     * @param ip IP地址
-     * @return 格式为"省份-城市"的位置信息，如"广东省-深圳市"
-     */
-    public String searchIp(String ip) {
-        try {
-            // 1. 检查本地地址
-            if (isLocalAddress(ip)) {
-                return "本地";
-            }
-
-            // 2. 检查IPv4格式
-            if (!isIPv4Address(ip)) {
-                log.warn("非IPv4地址跳过查询: {}", ip);
-                return "内网";
-            }
-
-            // 3. 查询IP地理位置 (示例格式："中国|0|广东省|深圳市|电信")
-            String location = searcher.search(ip);
-
-            // 4. 解析并格式化返回结果为"省份-城市"
-            return parseLocation(location);
-        } catch (Exception e) {
-            log.warn("IP查询异常 | ip={}", ip, e);
-            return "未知";
-        }
-    }
-
-    /**
-     * 解析IP查询结果格式："中国|0|广东省|深圳市|电信"
-     */
-    private String parseLocation(String rawLocation) {
-        if (rawLocation == null || rawLocation.trim().isEmpty()) {
-            return "未知";
-        }
-
-        String[] parts = rawLocation.split("\\|");
-        if (parts.length >= 4) {
-            // 格式：中国|0|省份|城市|运营商
-            String province = parts[2].replace("省", "").replace("市", "");
-            String city = parts[3].replace("市", "");
-
-            // 处理直辖市情况（如北京市）
-            if (province.equals(city) || parts[2].endsWith("市")) {
-                return province + "-" + province;
-            }
-            return province + "-" + city;
-        }
-
-        return "未知";
-    }
-
-    private boolean isIPv4Address(String ip) {
-        return ip.matches(IPV4_PATTERN);
-    }
-
-    private boolean isLocalAddress(String ip) {
-        return ip.equals("127.0.0.1") ||
-                ip.equals("0:0:0:0:0:0:0:1") ||
-                ip.equals("::1");
     }
 
     // IP地址验证方法

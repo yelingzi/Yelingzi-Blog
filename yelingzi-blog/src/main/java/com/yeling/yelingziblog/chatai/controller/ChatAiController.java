@@ -3,7 +3,9 @@ package com.yeling.yelingziblog.chatai.controller;
 
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
 import com.yeling.yelingziblog.chatai.service.ChatAiService;
+import com.yeling.yelingziblog.chatai.vo.request.AppAiChatReq;
 import com.yeling.yelingziblog.chatai.vo.request.MoreChatReq;
+import com.yeling.yelingziblog.common.dto.ApiResponse;
 import com.yeling.yelingziblog.common.utils.IpUtils;
 import com.yeling.yelingziblog.common.utils.JwtUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +50,27 @@ public class ChatAiController {
                               HttpServletRequest request){
         String ip = IpUtils.getIpAddr(request);
         return chatAiService.chats(req, JwtUtils.getUserByTokenOrDeviceId(jwtToken, deviceId), ip);
+    }
+
+    @PostMapping(value = "/app/chat")
+    public ApiResponse appAiChat(@RequestBody AppAiChatReq appAiChatReq,
+                                   @RequestHeader(value = "Authorization", required = false) String jwtToken,
+                                   @RequestHeader("x-host") String deviceId,
+                                   HttpServletRequest request) {
+
+        String ip = IpUtils.getIpAddr(request);
+        Flux<String> flux = chatAiService.appChat(appAiChatReq.getPrompt(), appAiChatReq.getSessionId(), JwtUtils.getUserByTokenOrDeviceId(jwtToken, deviceId), ip);
+        return ApiResponse.success();
+    }
+
+    @PostMapping("/app/chats")
+    public ApiResponse appAiChats (@RequestBody MoreChatReq req,
+                                   @RequestHeader(value = "Authorization", required = false) String jwtToken,
+                                   @RequestHeader("x-host") String deviceId,
+                                   HttpServletRequest request){
+        String ip = IpUtils.getIpAddr(request);
+        chatAiService.appChats(req, JwtUtils.getUserByTokenOrDeviceId(jwtToken, deviceId), ip);
+        return ApiResponse.success();
     }
 
 }

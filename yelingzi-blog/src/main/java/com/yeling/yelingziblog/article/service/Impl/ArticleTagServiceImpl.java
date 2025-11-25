@@ -8,6 +8,7 @@ import com.yeling.yelingziblog.article.vo.response.TagResp;
 import com.yeling.yelingziblog.article.mapper.ArticleTagMapper;
 import com.yeling.yelingziblog.article.service.ArticleTagService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -85,6 +86,7 @@ public class ArticleTagServiceImpl implements ArticleTagService {
     }
 
     @Override
+    @Cacheable(value = "tag:list")
     public List<TagResp> getArticleTagRespList(){
         return articleTagMapper.findTagResp();
     }

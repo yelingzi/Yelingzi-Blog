@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yeling.yelingziblog.article.mapper.ArticleSearchMapper">
+
+
+    <select id="listByDynamicCond" parameterType="com.yeling.yelingziblog.article.dto.ArticleSearchDTO"
+            resultType="com.yeling.yelingziblog.article.entity.Article">
+        SELECT *
+        FROM article
+        <where>
+            <!-- 1. 标题 -->
+            <if test="title != null and title != ''">
+                AND title LIKE concat('%', #{title}, '%')
+            </if>
+
+            <!-- 2. 时间区间（date 是长度为 2 的 List）-->
+            <if test="date != null and date.size() == 2">
+                AND create_time BETWEEN #{date[0]} AND #{date[1]}
+            </if>
+
+            <!-- 3. 状态 -->
+            <if test="state != null">
+                AND state = #{state}
+            </if>
+            <!-- 4. 是否原创 -->
+            <if test="isOriginal != null">
+                AND is_original = #{isOriginal}
+            </if>
+            <!-- 5. 是否顶置 -->
+            <if test="isTop != null">
+                AND is_top = #{isTop}
+            </if>
+
+            <!-- 6. 用户ID -->
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+
+            <!-- 7. 分类：只保留指定分类 -->
+            <if test="category != null and category != ''">
+                AND JSON_UNQUOTE(JSON_EXTRACT(category, '$.categoryName')) = #{category}
+            </if>
+
+            <!-- 8. 标签：只保留包含该标签 -->
+            <if test="tag != null and tag != ''">
+                AND JSON_CONTAINS(tag_list, JSON_OBJECT('tagName', #{tag}))
+            </if>
+
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="listBySimpleDynamicCond" parameterType="com.yeling.yelingziblog.article.vo.request.ArticleSearchReq"
+            resultType="com.yeling.yelingziblog.article.entity.Article">
+        SELECT *
+        FROM article
+        <where>
+            <!-- 1. 标题 -->
+            <if test="title != null and title != ''">
+                AND title LIKE concat('%', #{title}, '%')
+            </if>
+
+            <!-- 2. 时间区间（date 是长度为 2 的 List）-->
+            <if test="date != null and date.size() == 2">
+                AND create_time BETWEEN #{date[0]} AND #{date[1]}
+            </if>
+
+            <!-- 3. 状态 -->
+            <if test="state != null">
+                AND state = #{state}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="getArticleTitleListBySearch" parameterType="String"
+            resultType="com.yeling.yelingziblog.common.dto.SimpleDataSearchDTO">
+        SELECT id,title AS name
+        FROM article
+        <if test="search != null and search != ''">
+            WHERE title LIKE CONCAT('%', #{search}, '%')
+        </if>
+        LIMIT 0,10
+    </select>
+
+    <select id="getArticleTagListBySearch" parameterType="String"
+            resultType="com.yeling.yelingziblog.common.dto.SimpleDataSearchDTO">
+        SELECT id, tag_name AS name
+        FROM article_tag
+        <if test="search != null and search != ''">
+            WHERE tag_name LIKE CONCAT('%', #{search}, '%')
+        </if>
+        LIMIT 0,10
+    </select>
+
+    <select id="getArticleCategoryListBySearch" parameterType="String"
+            resultType="com.yeling.yelingziblog.common.dto.SimpleDataSearchDTO">
+        SELECT id, category_name AS name
+        FROM article_category
+        <if test="search != null and search != ''">
+            WHERE category_name LIKE CONCAT('%', #{search}, '%')
+        </if>
+        LIMIT 0,10
+    </select>
+
+</mapper>

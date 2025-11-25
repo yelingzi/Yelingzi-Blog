@@ -3,6 +3,7 @@ package com.yeling.yelingziblog.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.yeling.yelingziblog.chat.dto.PushMessageDto;
+import com.yeling.yelingziblog.common.dto.NettyPushMessage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
@@ -142,6 +143,37 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
      */
     public static void broadcastAll(PushMessageDto pushMessageResp) {
         String json = JSON.toJSONString(pushMessageResp);
+        TextWebSocketFrame frame = new TextWebSocketFrame(json);
+
+        // 遍历所有在线 channel
+        for (Channel ch : userChannelMap.values()) {
+            if (ch != null && ch.isActive()) {
+                ch.writeAndFlush(frame.retain());   // retain 防止多次释放
+            }
+        }
+        // 用完手动释放一次引用计数
+        ReferenceCountUtil.release(frame);
+    }
+
+    /**
+     * 根据 uid 推送，uid=0 时用 nickname 当系统号
+     */
+    public static boolean sendMessage(String uid, NettyPushMessage message) {
+        Channel ch = userChannelMap.get(uid);
+        if (ch != null && ch.isActive()) {
+            log.info("发送消息给用户：{}", uid);
+            ch.writeAndFlush(new TextWebSocketFrame(JSON.toJSONString(message)));
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 向所有在线客户端广播消息
+     * @param message 推送消息统一返回体
+     */
+    public static void broadcastAllMessage(NettyPushMessage message) {
+        String json = JSON.toJSONString(message);
         TextWebSocketFrame frame = new TextWebSocketFrame(json);
 
         // 遍历所有在线 channel

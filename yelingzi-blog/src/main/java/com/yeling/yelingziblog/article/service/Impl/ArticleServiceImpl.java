@@ -6,6 +6,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.houbb.sensitive.word.core.SensitiveWordHelper;
+import com.yeling.yelingziblog.article.dto.StatList;
+import com.yeling.yelingziblog.article.entity.ArticleLike;
+import com.yeling.yelingziblog.article.utils.Convert;
 import com.yeling.yelingziblog.user.entity.User;
 import com.yeling.yelingziblog.article.entity.Article;
 import com.yeling.yelingziblog.article.entity.ArticleComment;
@@ -25,12 +28,14 @@ import com.yeling.yelingziblog.common.utils.HtmlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -49,6 +54,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Autowired
     private ArticleTagMapper articleTagMapper;
+
+    @Autowired
+    private ImageUtils imageUtils;
     private final ObjectMapper objectMapper;
 
     public ArticleServiceImpl( ObjectMapper objectMapper) {
@@ -68,14 +76,13 @@ public class ArticleServiceImpl implements ArticleService {
     @Value("${file.upload.relativePath}")
     private String imageRelativePath;
 
-    @Value("${file.upload.allowedTypes:image/jpg,image/jpeg,image/png,image/gif}")
-    private String allowedTypes;
 
     @Value("${file.upload.maxSize:5242880}") // 默认最大5MB
     private long maxSize;
 
     @Transactional
     @Override
+    @Cacheable(value = "article:id", key = "#id")
     public ArticleResp findArticleById(Integer id) {
 
         Article article = articleMapper.findArticleById(id);
@@ -334,6 +341,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
+    @Cacheable(value = "article:page", key = "'p:'+#page+':ps:'+#pageSize")
     public PageResult<ArticleResp> getArticleListByPage(Integer page, Integer pageSize) {
         // 计算分页查询的起始索引
         Integer start = (page - 1) * pageSize;
@@ -376,7 +384,7 @@ public class ArticleServiceImpl implements ArticleService {
         combinedArticles.addAll(latestArticles);
 
         // 将Article对象转换为ArticleResp对象
-        List<ArticleResp> articleRespList = convertToArticleRespList(combinedArticles);
+        List<ArticleResp> articleRespList = Convert.convertToArticleRespList(combinedArticles);
 
         // 构造分页结果
         PageResult<ArticleResp> pageResult = new PageResult<>();
@@ -390,59 +398,6 @@ public class ArticleServiceImpl implements ArticleService {
         return pageResult;
     }
 
-    private List<ArticleResp> convertToArticleRespList(List<Article> articles) {
-        List<ArticleResp> articleRespList = new ArrayList<>();
-
-        for (Article article : articles) {
-
-            articleRespList.add(ArticleToArticleResp(article));
-        }
-
-        return articleRespList;
-    }
-
-    private ArticleResp ArticleToArticleResp(Article article){
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        ArticleResp articleResp = new ArticleResp();
-        // 基本字段转换
-        articleResp.setId(article.getId());
-        articleResp.setNickname(article.getNickname());
-        articleResp.setTitle(article.getTitle());
-        articleResp.setContent(article.getBrief());
-        articleResp.setArticleCover(article.getArticleCover());
-        articleResp.setState(article.getState());
-        articleResp.setUserId(article.getUserId());
-        articleResp.setUserAvatar(article.getUserAvatar());
-        articleResp.setIsOriginal(article.getIsOriginal());
-        articleResp.setOriginalUrl(article.getOriginalUrl());
-        articleResp.setIsTop(article.getIsTop());
-        articleResp.setStarCount(article.getStarCount());
-        articleResp.setCreateTime(article.getCreateTime());
-        articleResp.setUpdateTime(article.getUpdateTime());
-        articleResp.setReadCount(article.getReadCount());
-        articleResp.setCommentCount(article.getCommentCount());
-        articleResp.setLikeCount(article.getLikeCount());
-
-        // JSON字段转换
-        try {
-            // 分类字段
-            if (article.getCategory() != null && !article.getCategory().isEmpty()) {
-                CategoryResp category = objectMapper.readValue(article.getCategory(), CategoryResp.class);
-                articleResp.setCategory(category);
-            }
-
-            // 标签字段
-            if (article.getTagList() != null && !article.getTagList().isEmpty()) {
-                List<TagResp> tags = objectMapper.readValue(article.getTagList(), new TypeReference<List<TagResp>>() {});
-                articleResp.setTagList(tags);
-            }
-        } catch (JsonProcessingException e) {
-            // JSON解析失败时的处理逻辑
-            e.printStackTrace();
-        }
-        return articleResp;
-    }
 
     @Override
     public String uploadArticleImage(MultipartFile multipartFile){
@@ -455,19 +410,26 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     public String uploadImage(MultipartFile multipartFile, String path){
-        return ImageUtils.uploadImage(multipartFile, path, imageSavePath, imageRelativePath, allowedTypes, maxSize);
+        return imageUtils.uploadImage(multipartFile,
+                ImageUtils.UploadConfig.builder()
+                        .saveSubDir(path).savePath(imageSavePath)
+                        .relativePath(imageRelativePath)
+                        .maxSize(maxSize)
+                        .build());
     }
 
 
     @Override
+    @Cacheable(value = "article:list")
     public List<ArticleResp> getArticleList(){
         return articleMapper.findArticleRespList();
     }
 
     @Override
+    @Cacheable(value = "article:recommend")
     public List<ArticleResp> getRecommendArticleList(){
         List<Article> articles = articleMapper.findArticleRespListByLikeCountDescPage(3);
-        return convertToArticleRespList(articles);
+        return Convert.convertToArticleRespList(articles);
     }
 
     private String processCategory(CategoryResp categoryResp){
@@ -602,6 +564,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
+    @Cacheable(value = "article:category")
     public List<ArticleSortByCategoryResp> getArticleListFromCategory() {
         List<SimpleArticleResp> simpleArticleRespList = articleMapper.findSimpleArticleList();
 
@@ -723,6 +686,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
+    @Cacheable(value = "article:tag")
     public List<TagFindArticleResp> getArticleListByTag(Integer tagId) {
         // 通过标签ID查询所有文章ID
         List<Integer> articleIds = articleMapper.findArticleIdByTagId(tagId);
@@ -765,7 +729,7 @@ public class ArticleServiceImpl implements ArticleService {
     public List<ArticleResp> searchArticle(String search){
         List<Article> article = articleMapper.findArticleRespListBySearch(search);
 
-        return convertToArticleRespList(article);
+        return Convert.convertToArticleRespList(article);
     }
 
     @Override
@@ -804,6 +768,52 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public Integer getUnPublishArticleCommentCount(){
         return articleMapper.getUnPublishArticleCommentCount();
+    }
+
+    // 通用转换方法，使用函数式接口提取对应的计数字段
+    private List<StatArticleListResp> convertToResp(List<StatList> list, Function<StatList, Integer> countExtractor) {
+        if (list == null) {
+            return new ArrayList<>();
+        }
+        return list.stream()
+                .filter(Objects::nonNull)  // 过滤null元素
+                .map(stat -> {
+                    StatArticleListResp resp = new StatArticleListResp();
+                    resp.setArticleName(stat.getTitle());
+                    resp.setCount(countExtractor.apply(stat));
+                    return resp;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<StatArticleListResp> getLikeCountRank() {
+        List<StatList> list = articleMapper.getLikeCountRank(0, 5);
+        return convertToResp(list, StatList::getLikeCount);
+    }
+
+    @Override
+    public List<StatArticleListResp> getViewCountRank() {
+        List<StatList> list = articleMapper.getViewCountRank(0, 5);
+        return convertToResp(list, StatList::getReadCount);
+    }
+
+    @Override
+    public List<StatArticleListResp> getCommentCountRank() {
+        List<StatList> list = articleMapper.getCommentCountRank(0, 5);
+        return convertToResp(list, StatList::getCommentCount);
+    }
+
+    @Override
+    public PageResult<ArticleLike> getArticleLikeListByIdAndPage(Integer articleId, Integer page, Integer pageSize){
+        PageResult<ArticleLike> pageResult = new PageResult<>();
+        pageResult.setPage(page);
+        pageResult.setPageSize(pageSize);
+        Integer p = page == 0 ? 0 : (page-1)*pageSize;
+        pageResult.setData(articleMapper.findArticleLikeByIdAndPage(articleId, p, pageSize));
+        pageResult.setTotal(articleMapper.findArticleLikeCountByArticleId(articleId));
+
+        return pageResult;
     }
 
 }

@@ -10,6 +10,7 @@ import com.yeling.yelingziblog.other.mapper.MessageMapper;
 import com.yeling.yelingziblog.other.service.MessageService;
 import com.yeling.yelingziblog.common.utils.HtmlUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -59,6 +60,7 @@ public class MessageServiceImpl implements MessageService {
         return messagePageResult;
     }
     @Override
+    @Cacheable(value = "message:list")
     public List<MessageResp> getMessageList(){
         return messageMapper.findMessageList();
     }

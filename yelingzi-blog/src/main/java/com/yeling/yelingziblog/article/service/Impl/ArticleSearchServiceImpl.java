@@ -1,11 +1,17 @@
 package com.yeling.yelingziblog.article.service.Impl;
 
-import com.yeling.yelingziblog.user.entity.User;
+import com.yeling.yelingziblog.article.dto.ArticleSearchDTO;
+import com.yeling.yelingziblog.article.utils.Convert;
+import com.yeling.yelingziblog.article.vo.request.ArticleSearchReq;
+import com.yeling.yelingziblog.article.vo.response.ArticleResp;
+import com.yeling.yelingziblog.common.dto.SimpleDataSearchDTO;
+import com.yeling.yelingziblog.article.vo.request.ArticleSimpleSearchReq;
+import com.yeling.yelingziblog.common.vo.response.SingleDataSearchResp;
+import com.yeling.yelingziblog.common.dto.PageResult;
 import com.yeling.yelingziblog.article.entity.Article;
-import com.yeling.yelingziblog.article.entity.ArticleInfo;
-import com.yeling.yelingziblog.common.utils.JwtUtils;
 import com.yeling.yelingziblog.article.mapper.ArticleSearchMapper;
 import com.yeling.yelingziblog.article.service.ArticleSearchService;
+import com.yeling.yelingziblog.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,93 +26,47 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
     @Autowired
     private ArticleSearchMapper articleSearchMapper;
 
+    @Autowired
+    private UserService userService;
 
-    /**
-     *
-     * @param search 搜索
-     * @param page 页码
-     * @param classify 分类
-     * @return 文章数据
-     */
+
     @Override
-    public List<ArticleInfo> userSearchArticle(String search, Integer page, String classify, String jwt) {
-        //获取数据
-        Integer integer = page * 10;
-
-        User user = JwtUtils.getUser(jwt);
-
-        if(classify.equals("全部")){
-            return articleSearchMapper.userSearchArticle(search, integer,user.getId());
-        }else{
-            return articleSearchMapper.userSearchArticleByClassify(search,integer,classify,user.getId());
-        }
-
+    public PageResult<ArticleResp> searchArticleListBySimpleDynamicCond(ArticleSimpleSearchReq req){
+        List<Article> articleList = articleSearchMapper.listBySimpleDynamicCond(req);
+        return new PageResult<>(articleList.size(), req.getPage(), req.getPageSize(), Convert.convertToArticleRespList(articleList));
     }
 
     @Override
-    public List<ArticleInfo> searchArticle(String search, Integer page, String classify) {
-        //获取数据
-        Integer integer = page * 10;
+    public PageResult<ArticleResp> searchArticleListByDynamicCond(ArticleSearchReq req){
+
+        Integer userId = userService.getUserIdByNickname(req.getNickname());
+
+        ArticleSearchDTO articleSearchDTO = new ArticleSearchDTO(req, userId);
+        List<Article> articleList = articleSearchMapper.listByDynamicCond(articleSearchDTO);
 
 
-        if(classify.equals("全部")){
-            return articleSearchMapper.searchArticle(search, integer);
-        }else{
-            return articleSearchMapper.searchArticleByClassify(search,integer,classify);
-        }
-
-    }
-
-    /**
-     *
-     * @param articleInfos 文章
-     * @return 文章
-     */
-    public List<ArticleInfo> getUserArticleStar(List<ArticleInfo> articleInfos, Integer userId){
-
-        return articleInfos;
-    }
-
-    public List<Article> searchArticleS(String search, Integer page, String classify){
-        //获取数据
-        Integer integer = page * 10;
-        List<Article> articleList = new ArrayList<>();
-
-        List<Article> articles;
-        if (classify.equals("全部")) {
-            articles = articleSearchMapper.searchArticleTitle(search, integer);
-            articleList.addAll(articles);
-            if (articles.size() < 10) {
-                int remainingCount = 10 - articles.size(); // 计算还需要搜索的文章数量
-                List<Article> articles1 = articleSearchMapper.searchArticleContent(search, integer, remainingCount);
-                articleList.addAll(articles1); // 使用addAll方法添加articles1列表的所有元素
-            }
-        }else{
-            articles = articleSearchMapper.searchArticleByClassifyTitle(search, integer, classify);
-            articleList.addAll(articles);
-            if (articles.size() < 10) {
-                int remainingCount = 10 - articles.size(); // 计算还需要搜索的文章数量
-                List<Article> articles1 = articleSearchMapper.searchArticleByClassifyContent(search, integer, classify, remainingCount);
-                articleList.addAll(articles1); // 使用addAll方法添加articles1列表的所有元素
-            }
-        }
-        return articleList;
-
+        return new PageResult<>(articleList.size(), req.getPage(), req.getPageSize(), Convert.convertToArticleRespList(articleList));
     }
 
     @Override
-    public Integer getSearchArticleCount(String search,String classify){
-        if(classify.equals("全部")){
-            return articleSearchMapper.getSearchArticleCount(search);
-        }else{
-            return articleSearchMapper.getSearchArticleClassifyCount(search, classify);
-        }
+    public List<SingleDataSearchResp> getArticleSingleDataListBySearch(String search, String type){
+
+        List<SimpleDataSearchDTO> articleTitleSearchDTOS = switch (type) {
+            case "title" -> articleSearchMapper.getArticleTitleListBySearch(search);
+            case "tag" -> articleSearchMapper.getArticleTagListBySearch(search);
+            case "category" -> articleSearchMapper.getArticleCategoryListBySearch(search);
+            default -> new ArrayList<>();
+        };
+        return  articleTitleSearchDTOS.stream().map(this::convertArticleTitleSearchDTO2ArticleTitleSearchResp).toList();
+
     }
 
-    @Override
-    public List<String> getArticleClassifyBySearch(String search){
-        return articleSearchMapper.getArticleClassifyBySearch(search);
-    }
 
+    private SingleDataSearchResp convertArticleTitleSearchDTO2ArticleTitleSearchResp(SimpleDataSearchDTO articleTitleSearchDTO){
+        SingleDataSearchResp articleTitleSearchResp = new SingleDataSearchResp();
+        articleTitleSearchResp.setId(articleTitleSearchDTO.getId());
+        articleTitleSearchResp.setValue(articleTitleSearchDTO.getName());
+        return articleTitleSearchResp;
+    }
 
 }

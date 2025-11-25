@@ -9,7 +9,7 @@ spring:
     redis:
       host: localhost
       port: 6379
-      password: 
+      password: # redis密码
       database: 0
       lettuce:
         pool:
@@ -19,8 +19,8 @@ spring:
           min-idle: 0
   mail:
     host: smtp.qq.com
-    username: 
-    password: 
+    username: # 发件人邮箱地址
+    password: # 邮箱授权码
     default-encoding: UTF-8
     port: 465
     properties:
@@ -33,6 +33,12 @@ spring:
             enable: true
   profiles:
     active: dev
+
+email:
+  from-address:  # 发件人地址 必须与上面(spring-mail-host)一致
+  max-retry-count: 3 
+  message-ttl: 600000
+  default-encoding: UTF-8
 
 mybatis:
   configuration:
@@ -55,3 +61,65 @@ logging:
             client:
               advisor: DEBUG
 
+#导出配置
+export:
+  tables:
+    - name: article        # 表名（与策略类support()匹配）
+      description: 文章列表   # 前端显示名称
+      permission: article:export  # 权限标识
+      enabled: true        # 是否启用
+
+    - name: message
+      description: 留言列表
+      permission: message:export
+      enabled: true
+
+    - name: user
+      description: 用户列表
+      permission: user:export
+      enabled: false
+
+    - name: user-info
+      description: 用户信息列表
+      permission: user:export
+      enabled: false
+
+    - name: salt
+      description: 盐表
+      permission: user:export
+      enabled: false
+
+    - name: talk
+      description: 说说列表
+      permission: talk:export
+      enabled: true
+
+    - name: friend
+      description: 友链列表
+      permission: friend:export
+      enabled: true
+
+    - name: album
+      description: 相册列表
+      permission: album:export
+      enabled: true
+
+    - name: photo
+      description: 图片列表
+      permission: album:export
+      enabled: true
+
+    - name: chat
+      description: 聊天列表
+      permission: chat:export
+      enabled: true
+
+    - name: group-chat
+      description: 群聊列表
+      permission: chat:export
+      enabled: true
+
+    - name: chat-ai
+      description: AI聊天列表
+      permission: ai:export
+      enabled: true

@@ -1,8 +1,10 @@
 package com.yeling.yelingziblog.article.mapper;
 
+import com.yeling.yelingziblog.article.dto.StatList;
 import com.yeling.yelingziblog.article.entity.Article;
 import com.yeling.yelingziblog.article.entity.ArticleComment;
 import com.yeling.yelingziblog.article.entity.ArticleCommentInfo;
+import com.yeling.yelingziblog.article.entity.ArticleLike;
 import com.yeling.yelingziblog.article.vo.response.ArticleResp;
 import com.yeling.yelingziblog.article.vo.response.SimpleArticleResp;
 import org.apache.ibatis.annotations.*;
@@ -237,5 +239,38 @@ public interface ArticleMapper {
 
     @Select("SELECT COUNT(*) FROM article_comment WHERE is_publish = 0 ")
     Integer getUnPublishArticleCommentCount();
+
+    @Select("""
+            SELECT title,like_count
+            FROM article WHERE state=0 ORDER BY like_count DESC LIMIT #{page},#{num}
+            """)
+    List<StatList> getLikeCountRank(Integer page,Integer num);
+
+    @Select("""
+            SELECT title,read_count
+            FROM article WHERE state=0 ORDER BY read_count DESC LIMIT #{page},#{num}
+            """)
+    List<StatList> getViewCountRank(Integer page,Integer num);
+
+    @Select("""
+            SELECT title,comment_count
+            FROM article WHERE state=0 ORDER BY comment_count DESC LIMIT #{page},#{num}
+            """)
+    List<StatList> getCommentCountRank(Integer page,Integer num);
+
+    @Select("""
+            SELECT * FROM article_like WHERE article_id=#{articleId} ORDER BY like_time DESC limit #{page},#{pageSize}
+            """)
+    List<ArticleLike> findArticleLikeByIdAndPage(Integer articleId, Integer page, Integer pageSize);
+
+    @Select("""
+            SELECT COUNT(*) FROM article_comment 
+            """)
+    int findArticleCommentCount();
+
+    @Select("""
+            SELECT COUNT(*) FROM article_like WHERE article_id=#{articleId}
+            """)
+    int findArticleLikeCountByArticleId(Integer articleId);
 
 }

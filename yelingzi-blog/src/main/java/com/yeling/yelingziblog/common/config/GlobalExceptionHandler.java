@@ -61,7 +61,8 @@ public class GlobalExceptionHandler {
             EmailNotRegisteredException.class,
             EmailSendFailureException.class,
             JwtExpiredException.class,
-            JwtInvalidException.class
+            JwtInvalidException.class,
+            MQSendException.class
     })
     public ResponseEntity<ApiResponse> handleBusinessException(Exception ex) {
         int code = 500;
@@ -88,6 +89,9 @@ public class GlobalExceptionHandler {
             code = 400;
             status = HttpStatus.BAD_REQUEST;
         } else if (ex instanceof EmailSendFailureException) {
+            code = 500;
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        } else if (ex instanceof  MQSendException) {
             code = 500;
             status = HttpStatus.INTERNAL_SERVER_ERROR;
         }

@@ -21,8 +21,9 @@ public interface ChatService {
 
     void sendImageMessage(User user, MultipartFile multipartFile, String ip);
 
-    ChatMessageResp adminSendSingleMessage(User user, String message, String ip, String toUser);
-
+    void adminSendSingleMessage(User user, String message, String ip, String toUser, String type);
+    void adminSendImageMessage(User user, MultipartFile message, String ip, String toUser);
+    void adminSendEmojiMessage(User user, String message, String ip, String toUser, String type);
 
     MessageListResp getMessageList(MessageListReq messageListReq, User user);
 

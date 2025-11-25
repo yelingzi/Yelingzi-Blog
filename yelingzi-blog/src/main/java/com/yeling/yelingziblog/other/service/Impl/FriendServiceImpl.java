@@ -8,6 +8,7 @@ import com.yeling.yelingziblog.other.vo.response.FriendResp;
 import com.yeling.yelingziblog.other.mapper.FriendMapper;
 import com.yeling.yelingziblog.other.service.FriendService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     public void addFriend(FriendReq friendReq, User user){
         friendMapper.addFriend(friendReq.getTitle(), friendReq.getCover(), friendReq.getIntroduction(), friendReq.getUrl(),
-                user.getId(), user.getEmail());
+                user.getId(), user.getNickname());
     }
 
     @Override
@@ -47,6 +48,7 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Cacheable(value = "friend:list")
     public List<FriendResp> getFriendList(){
         return friendMapper.findFriendList();
     }

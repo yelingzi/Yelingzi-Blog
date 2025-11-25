@@ -1,5 +1,7 @@
 package com.yeling.yelingziblog.article.service;
 
+import com.yeling.yelingziblog.article.entity.ArticleLike;
+import com.yeling.yelingziblog.article.vo.response.StatArticleListResp;
 import com.yeling.yelingziblog.user.entity.User;
 import com.yeling.yelingziblog.article.entity.ArticleComment;
 import com.yeling.yelingziblog.article.entity.ArticleCommentInfo;
@@ -67,4 +69,12 @@ public interface ArticleService {
     String uploadArticleImage(MultipartFile multipartFile);
 
     String uploadArticleCover(MultipartFile multipartFile);
+
+    List<StatArticleListResp> getLikeCountRank();
+
+    List<StatArticleListResp> getViewCountRank();
+
+    List<StatArticleListResp> getCommentCountRank();
+
+    PageResult<ArticleLike> getArticleLikeListByIdAndPage(Integer articleId, Integer page, Integer pageSize);
 }

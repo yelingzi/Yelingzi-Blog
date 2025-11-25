@@ -34,4 +34,6 @@ public class TalkResp {
 
     private Integer commentCount;
 
+    private Integer state;
+
 }

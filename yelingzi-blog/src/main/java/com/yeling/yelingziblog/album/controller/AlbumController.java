@@ -13,10 +13,13 @@ import com.yeling.yelingziblog.common.dto.UserContext;
 import com.yeling.yelingziblog.common.dto.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -182,11 +185,46 @@ public class AlbumController {
         log.info("获取热门的相册列表");
 
         List<SimpleAlbumResp> albumList = albumService.getSimpleAlbumOfPhotoCount();
-        if (albumList == null) {
-            return ApiResponse.error("获取热门的相册列表失败");
-        }
+
         return ApiResponse.success(albumList);
     }
 
+    /**
+     * 删除说说
+     *
+     * @param id       说说ID
+     * @return 结果
+     */
+    @CrossOrigin(origins = "http://localhost:5173")
+    @DeleteMapping(value = "/api/admin/album/del/{id}")
+    public ApiResponse deleteArticleTag(@Validated @PathVariable Integer id) {
+
+        User user = UserContext.getUser();
+
+        log.info("删除相册Id:{}, 管理员：{},邮箱:{}", id, Objects.requireNonNull(user).getId(), user.getNickname());
+
+        albumService.deleteAlbum(id);
+        return ApiResponse.success();
+    }
+
+    /**
+     * 复原说说
+     *
+     * @param params       说说数据
+     * @return 结果
+     */
+    @CrossOrigin(origins = "http://localhost:5173")
+    @PostMapping(value = "/api/admin/album/regain")
+    public ApiResponse regainArticleTag(@RequestBody Map<String, Object> params) {
+
+        User user = UserContext.getUser();
+
+        Integer id = Integer.valueOf(params.get("id").toString());
+
+        log.info("复原相册Id:{}, 管理员：{},邮箱:{}", id, Objects.requireNonNull(user).getId(), user.getNickname());
+
+        albumService.regainTalk(id);
+        return ApiResponse.success();
+    }
 
 }

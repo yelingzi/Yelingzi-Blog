@@ -1,5 +1,6 @@
 package com.yeling.yelingziblog.user.mapper;
 
+import com.yeling.yelingziblog.common.dto.SimpleDataSearchDTO;
 import com.yeling.yelingziblog.user.entity.User;
 import com.yeling.yelingziblog.user.vo.response.UserInfoResp;
 import com.yeling.yelingziblog.user.vo.request.UserInfoReq;
@@ -10,6 +11,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Mapper
 public interface UserMapper {
@@ -62,6 +64,11 @@ public interface UserMapper {
     UserInfoResp getInfo(int id);
 
 
+    @Select("""
+        SELECT user_id FROM user_info WHERE nickname=#{nickname}
+    """)
+    Integer getUserIdByNickname(String nickname);
+
     @Update("update user_info set nickname=#{nickname},user_avatar=#{userAvatar},update_time=#{updateTime} where user_id=#{id} ")
     void updateUserInfo(UserInfoReq userInfoReq);
 
@@ -87,5 +94,7 @@ public interface UserMapper {
 
     @Select("SELECT user_password FROM users WHERE email=#{email} ")
     String getPasswordByEmail(String email);
+
+    List<SimpleDataSearchDTO> getUserInfoNicknameListBySearch(String search);
     
 }

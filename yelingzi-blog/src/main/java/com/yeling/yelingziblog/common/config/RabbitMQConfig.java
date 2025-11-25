@@ -2,19 +2,27 @@ package com.yeling.yelingziblog.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Configuration
 public class RabbitMQConfig {
 
     // 邮件队列配置
-    public static final String EMAIL_QUEUE = "email.queue";
     public static final String EMAIL_EXCHANGE = "email.exchange";
+    public static final String EMAIL_QUEUE = "email.queue";
     public static final String EMAIL_ROUTING_KEY = "email.routing.key";
+
 
     @Bean
     public Jackson2JsonMessageConverter jsonMessageConverter() {

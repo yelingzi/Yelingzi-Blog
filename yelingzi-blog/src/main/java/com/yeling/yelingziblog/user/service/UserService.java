@@ -1,5 +1,6 @@
 package com.yeling.yelingziblog.user.service;
 
+import com.yeling.yelingziblog.common.vo.response.SingleDataSearchResp;
 import com.yeling.yelingziblog.user.vo.request.EmailLoginReq;
 import com.yeling.yelingziblog.user.vo.request.ResetPasswordReq;
 import com.yeling.yelingziblog.user.vo.response.LoginResp;
@@ -7,6 +8,8 @@ import com.yeling.yelingziblog.user.vo.response.UserInfoResp;
 import com.yeling.yelingziblog.user.entity.VerifyCodeEntity;
 import com.yeling.yelingziblog.user.vo.request.UserInfoReq;
 import com.yeling.yelingziblog.user.vo.request.UserLogin;
+
+import java.util.List;
 
 public interface UserService {
 
@@ -37,5 +40,9 @@ public interface UserService {
     String refresh(Integer id);
 
     LoginResp adminRefresh(Integer id);
+
+    List<SingleDataSearchResp> getUserInfoSingleDataListBySearch(String search, String type);
+
+    Integer getUserIdByNickname(String nickname);
 
 }

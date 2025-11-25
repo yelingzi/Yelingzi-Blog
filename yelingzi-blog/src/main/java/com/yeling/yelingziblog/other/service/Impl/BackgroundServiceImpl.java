@@ -9,6 +9,7 @@ import com.yeling.yelingziblog.other.service.BackgroundService;
 import com.yeling.yelingziblog.common.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,14 +18,6 @@ import java.util.List;
 @Service
 public class BackgroundServiceImpl implements BackgroundService {
 
-    @Value("${file.upload.savePath}")
-    private String savePath;
-
-    @Value("${file.upload.relativePath}")
-    private String relativePath;
-
-    @Value("${file.upload.allowedTypes:image/jpg,image/jpeg,image/png}")
-    private String allowedTypes;
 
     @Value("${file.upload.maxSize:2097152}") // 默认最大2MB
     private long maxSize;
@@ -32,10 +25,12 @@ public class BackgroundServiceImpl implements BackgroundService {
     @Autowired
     private BackgroundMapper backgroundMapper;
 
+    @Autowired
+    private ImageUtils imageUtils;
 
     @Override
     public void uploadBgImage(MultipartFile multipartFile, User user){
-        String path = ImageUtils.uploadImage(multipartFile, "/bg", savePath, relativePath, allowedTypes, maxSize);
+        String path = imageUtils.uploadImage(multipartFile, "/bg", maxSize);
 
         backgroundMapper.insert(path, user.getId(), user.getNickname());
 
@@ -72,6 +67,7 @@ public class BackgroundServiceImpl implements BackgroundService {
     }
 
     @Override
+    @Cacheable(value = "background:list")
     public List<BackgroundResp> getBackgroundList(){
         return backgroundMapper.findBackgroundList(0, 5);
     }

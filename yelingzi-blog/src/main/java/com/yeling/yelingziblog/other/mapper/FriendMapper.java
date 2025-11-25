@@ -13,10 +13,10 @@ import java.util.List;
 public interface FriendMapper {
 
     @Insert("""
-            insert into friend(title, cover, introduction, url, user_id, email)
-            values (#{title}, #{cover}, #{introduction},#{url}, #{userId}, #{email})
+            insert into friend(title, cover, introduction, url, user_id, nickname)
+            values (#{title}, #{cover}, #{introduction},#{url}, #{userId}, #{nickname})
             """)
-    void addFriend(String title, String cover, String introduction, String url, Integer userId, String email);
+    void addFriend(String title, String cover, String introduction, String url, Integer userId, String nickname);
 
     @Update("""
             UPDATE friend SET state=#{state} WHERE id=#{id}

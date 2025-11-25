@@ -13,6 +13,7 @@ import com.yeling.yelingziblog.album.service.AlbumService;
 import com.yeling.yelingziblog.common.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,20 +22,12 @@ import java.util.List;
 @Service
 public class AlbumServiceImpl implements AlbumService {
 
-    @Value("${file.upload.savePath}")
-    private String savePath;
-
-    @Value("${file.upload.relativePath}")
-    private String relativePath;
-
-    @Value("${file.upload.allowedTypes:image/jpg,image/jpeg,image/png}")
-    private String allowedTypes;
-
-    @Value("${file.upload.maxSize:10485760}") // 默认最大10MB
-    private long maxSize;
 
     @Autowired
     private AlbumMapper albumMapper;
+
+    @Autowired
+    private ImageUtils imageUtils;
 
 
     @Override
@@ -45,7 +38,7 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     public String uploadAlbumCover(MultipartFile multipartFile) {
-        return ImageUtils.uploadImage(multipartFile, "/album", savePath, relativePath, allowedTypes, maxSize);
+        return imageUtils.uploadImage(multipartFile, "/album");
     }
 
     @Override
@@ -75,7 +68,7 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     public String uploadAlbumImage(MultipartFile multipartFile, Integer albumID){
-        return ImageUtils.uploadImage(multipartFile, "/album/" + albumID, savePath, relativePath, allowedTypes, maxSize);
+        return imageUtils.uploadImage(multipartFile, "/album/" + albumID);
     }
 
     @Override
@@ -94,8 +87,19 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
+    @Cacheable(value = "album:hot")
     public List<SimpleAlbumResp> getSimpleAlbumOfPhotoCount(){
         return albumMapper.findSimpleAlbumListOrderByPhotoCount();
+    }
+
+    @Override
+    public void deleteAlbum(Integer id){
+        albumMapper.updateAlbumStateById(1, id);
+    }
+
+    @Override
+    public void regainTalk(Integer id){
+        albumMapper.updateAlbumStateById(0, id);
     }
 
 }

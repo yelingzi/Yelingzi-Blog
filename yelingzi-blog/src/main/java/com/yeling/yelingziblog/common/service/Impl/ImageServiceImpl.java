@@ -15,14 +15,8 @@ public class ImageServiceImpl implements ImageService {
     private ArticleMapper articleMapper;
 
 
-    @Value("${file.upload.savePath}")
-    private String savePath;
-
-    @Value("${file.upload.relativePath}")
-    private String relativePath;
-
-    @Value("${file.upload.allowedTypes:image/jpg,image/jpeg,image/png}")
-    private String allowedTypes;
+    @Autowired
+    private ImageUtils imageUtils;
 
     @Value("${file.upload.maxSize:5242880}") // 默认最大5MB
     private long maxSize;
@@ -54,12 +48,12 @@ public class ImageServiceImpl implements ImageService {
 
     public String uploadImage(MultipartFile multipartFile, String save){
 
-        return ImageUtils.uploadImage(multipartFile, save, savePath, relativePath, allowedTypes, maxSize);
+        return imageUtils.uploadImage(multipartFile, save, maxSize);
     }
 
     @Override
     public String addOrderCover(MultipartFile multipartFile){
-        return ImageUtils.uploadImage(multipartFile, "order_menu/", savePath, relativePath, allowedTypes, maxSize);
+        return imageUtils.uploadImage(multipartFile, "order_menu/", maxSize);
     }
 
 

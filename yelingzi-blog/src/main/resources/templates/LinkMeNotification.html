@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新的留言通知</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { background: #f8f9fa; padding: 20px; border-radius: 5px; }
+        .content { margin: 20px 0; padding: 20px; border: 1px solid #e9ecef; border-radius: 5px; }
+        .footer { margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 5px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>新的留言通知</h2>
+    </div>
+
+    <div class="content">
+        <p><strong>留言用户邮箱：</strong> <span th:text="${email}"></span></p>
+        <p><strong>留言时间：</strong> <span th:text="${#dates.format(createTime, 'yyyy-MM-dd HH:mm:ss')}"></span></p>
+        <p><strong>图片数量：</strong> <span th:text="${imageCount}"></span></p>
+
+        <div style="margin-top: 15px;">
+            <strong>留言内容：</strong>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 10px;">
+                <span th:text="${content}"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>此邮件由系统自动发送，请勿回复。</p>
+        <p>叶玲子的网页管理系统</p>
+    </div>
+</div>
+</body>
+</html>

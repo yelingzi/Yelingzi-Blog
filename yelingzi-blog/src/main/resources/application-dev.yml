@@ -34,6 +34,9 @@ file:
     saveArticlePath: D:/Data/article
     relativeArticlePath: /file/article
   jwtKeyPath: D://Data/jwtKey/jwtKey.json
+  export:
+    save-path: D:/ToolData/MyWeb/Data/export/
+    relative-path: D:/ToolData/MyWeb/Data/export/
 
 my:
   api:
@@ -42,3 +45,7 @@ my:
       key:
       w1path: https://cn.apihz.cn/api/tianqi/tqybip.php
       w2path: https://cn.apihz.cn/api/tianqi/tqyb.php
+
+link:
+  me:
+    email: #消息发送到的邮箱

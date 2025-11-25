@@ -32,4 +32,8 @@ public interface AlbumService {
 
     List<SimpleAlbumResp> getSimpleAlbumOfPhotoCount();
 
+    void deleteAlbum(Integer id);
+
+    void regainTalk(Integer id);
+
 }

@@ -1,5 +1,6 @@
 package com.yeling.yelingziblog.user.controller;
 
+import com.yeling.yelingziblog.common.vo.response.SingleDataSearchResp;
 import com.yeling.yelingziblog.user.entity.User;
 import com.yeling.yelingziblog.common.dto.UserContext;
 import com.yeling.yelingziblog.user.vo.request.EmailLoginReq;
@@ -18,7 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -181,6 +184,20 @@ public class UserController {
         Integer id = JwtUtils.getUserIdByRefresh(refreshToken);
         LoginResp loginResp = userService.adminRefresh(id);
         return ApiResponse.success(loginResp);
+    }
+
+    /**
+     * 模糊查询文章标题列表
+     */
+    @GetMapping(value = "/api/admin/user/search/nickname")
+    public ApiResponse getArticleCategoryListBySearch(@RequestParam String search) {
+        User user = UserContext.getUser();
+
+        log.info("搜索用户昵称列表：{}，管理员Id：{},邮箱:{}", search, Objects.requireNonNull(user).getId(),user.getEmail());
+
+        List<SingleDataSearchResp> pageResult = userService.getUserInfoSingleDataListBySearch(search, "nickname");
+
+        return ApiResponse.success(pageResult);
     }
 
 }

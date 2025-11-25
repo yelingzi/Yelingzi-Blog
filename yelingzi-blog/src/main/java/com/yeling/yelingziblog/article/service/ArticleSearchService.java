@@ -1,16 +1,21 @@
 package com.yeling.yelingziblog.article.service;
 
-import com.yeling.yelingziblog.article.entity.ArticleInfo;
+import com.yeling.yelingziblog.article.entity.Article;
+import com.yeling.yelingziblog.article.vo.request.ArticleSearchReq;
+import com.yeling.yelingziblog.article.vo.request.ArticleSimpleSearchReq;
+import com.yeling.yelingziblog.article.vo.response.ArticleResp;
+import com.yeling.yelingziblog.common.vo.response.SingleDataSearchResp;
+import com.yeling.yelingziblog.common.dto.PageResult;
 
 import java.util.List;
 
 public interface ArticleSearchService {
 
-    List<ArticleInfo> searchArticle(String search, Integer page, String classify);
+    PageResult<ArticleResp> searchArticleListBySimpleDynamicCond(ArticleSimpleSearchReq req);
 
-    List<ArticleInfo> userSearchArticle(String search, Integer page, String classify, String jwt);
+    PageResult<ArticleResp> searchArticleListByDynamicCond(ArticleSearchReq req);
 
-    Integer getSearchArticleCount(String search, String classify);
 
-    List<String> getArticleClassifyBySearch(String search);
+    List<SingleDataSearchResp> getArticleSingleDataListBySearch(String search, String type);
+
 }

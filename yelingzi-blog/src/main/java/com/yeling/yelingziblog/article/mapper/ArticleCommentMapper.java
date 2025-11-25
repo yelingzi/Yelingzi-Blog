@@ -64,9 +64,19 @@ public interface ArticleCommentMapper {
     List<ArticleComment> findArticleCommentByPage(Integer page, Integer pageSize);
 
     @Select("""
+            SELECT * FROM article_comment WHERE article_id=#{articleId} ORDER BY create_time DESC limit #{page},#{pageSize}
+            """)
+    List<ArticleComment> findArticleCommentByIdAndPage(Integer articleId,Integer page, Integer pageSize);
+
+    @Select("""
             SELECT COUNT(*) FROM article_comment 
             """)
     int findArticleCommentCount();
+
+    @Select("""
+            SELECT COUNT(*) FROM article_comment WHERE article_id=#{articleId}
+            """)
+    int findArticleCommentCountByArticleId(Integer articleId);
 
     @Update("""
             UPDATE article_comment SET state=#{state} WHERE id=#{id}

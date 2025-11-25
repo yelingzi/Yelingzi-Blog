@@ -5,10 +5,7 @@ import com.yeling.yelingziblog.album.vo.request.SimpleAlbumReq;
 import com.yeling.yelingziblog.album.vo.response.AlbumResp;
 import com.yeling.yelingziblog.album.vo.response.PhotoResp;
 import com.yeling.yelingziblog.album.vo.response.SimpleAlbumResp;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 @Mapper
@@ -31,7 +28,7 @@ public interface AlbumMapper {
     void addAlbum(String albumName, String albumCover, String albumDesc, Integer userId, String nickname);
 
     @Update("""
-            UPDATE album SET is_del=#{state} WHERE id=#{id}
+            UPDATE album SET is_del=#{isDel} WHERE id=#{id}
             """)
     void updateAlbumStateById(Integer isDel, Integer id);
 
@@ -74,5 +71,6 @@ public interface AlbumMapper {
             SELECT id,album_name,album_cover,album_desc,create_time FROM album WHERE is_del=0 ORDER BY photo_count DESC LIMIT 0, 5
             """)
     List<SimpleAlbumResp> findSimpleAlbumListOrderByPhotoCount();
+
 
 }

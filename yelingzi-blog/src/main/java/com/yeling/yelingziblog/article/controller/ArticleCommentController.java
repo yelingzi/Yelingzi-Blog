@@ -142,9 +142,24 @@ public class ArticleCommentController {
         log.info("获取文章评论列表，页数{},大小：{}，管理员Id：{},邮箱:{}", page, pageSize, Objects.requireNonNull(user).getId(),user.getEmail());
 
         PageResult<ArticleComment> pageResult = articleCommentService.getArticleCommentListByPage(page, pageSize);
-        if(pageResult == null){
-            return ApiResponse.error("获取文章分类列表失败");
-        }
+
+        return ApiResponse.success(pageResult);
+    }
+
+    /**
+     * 根据文章Id获取一页文章分类列表
+     */
+    @CrossOrigin(origins = "http://localhost:5173")
+    @GetMapping(value = "/api/admin/comment/article/id/page")
+    public ApiResponse getArticleCategoryListByIdAndPage(@RequestParam int articleId,
+                                                         @RequestParam int page,
+                                                        @RequestParam int pageSize) {
+        User user = UserContext.getUser();
+
+        log.info("获取文章:{}评论列表，页数{},大小：{}，管理员Id：{},邮箱:{}", articleId, page, pageSize, Objects.requireNonNull(user).getId(),user.getEmail());
+
+        PageResult<ArticleComment> pageResult = articleCommentService.getArticleCommentListByIdAndPage(articleId, page, pageSize);
+
         return ApiResponse.success(pageResult);
     }
 

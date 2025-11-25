@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yeling.yelingziblog.export.mapper.ExcelExportMapper">
+
+    <resultMap id="TagResultMap" type="com.yeling.yelingziblog.article.entity.Tag">
+        <id column="id" property="id"/>
+        <result column="tag_name" property="tagName"/>
+        <result column="user_id" property="userId"/>
+        <result column="nickname" property="nickname"/>
+        <result column="create_time" property="createTime"/>
+        <result column="is_del" property="isDel"/>
+        <result column="article_count" property="articleCount"/>
+    </resultMap>
+    <select id="exportArticleTag" resultMap="TagResultMap">
+        SELECT * FROM article_tag
+    </select>
+</mapper>

@@ -129,6 +129,18 @@ public class ArticleCommentServiceImpl implements ArticleCommentService {
     }
 
     @Override
+    public PageResult<ArticleComment> getArticleCommentListByIdAndPage(Integer articleId, Integer page, Integer pageSize){
+        PageResult<ArticleComment> pageResult = new PageResult<>();
+        pageResult.setPage(page);
+        pageResult.setPageSize(pageSize);
+        Integer p = page == 0 ? 0 : (page-1)*pageSize;
+        pageResult.setData(articleCommentMapper.findArticleCommentByIdAndPage(articleId, p, pageSize));
+        pageResult.setTotal(articleCommentMapper.findArticleCommentCountByArticleId(articleId));
+
+        return pageResult;
+    }
+
+    @Override
     @Transactional
     public void delArticleComment(Integer id){
         int state = articleCommentMapper.findArticleCommentStateById(id);

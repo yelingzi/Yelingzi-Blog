@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ArticleLike {
 
+    private Integer id;
     private Integer userId;
     private Integer articleId;
     private LocalDateTime likeTime; //创建时间

@@ -1,10 +1,13 @@
 package com.yeling.yelingziblog.user.service.Impl;
 
 import com.wf.captcha.SpecCaptcha;
+import com.yeling.yelingziblog.common.dto.EmailMessageDTO;
+import com.yeling.yelingziblog.common.dto.SimpleDataSearchDTO;
 import com.yeling.yelingziblog.common.exception.*;
 import com.yeling.yelingziblog.common.service.RedisService;
+import com.yeling.yelingziblog.common.vo.response.SingleDataSearchResp;
 import com.yeling.yelingziblog.user.entity.User;
-import com.yeling.yelingziblog.user.service.EmailService;
+import com.yeling.yelingziblog.common.service.EmailService;
 import com.yeling.yelingziblog.user.vo.request.EmailLoginReq;
 import com.yeling.yelingziblog.user.vo.request.ResetPasswordReq;
 import com.yeling.yelingziblog.user.vo.response.LoginResp;
@@ -316,6 +319,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Integer getUserIdByNickname(String nickname){
+        return userMapper.getUserIdByNickname(nickname);
+    }
+
+    @Override
     public Integer updateUserInfo(UserInfoReq userInfoReq, String jwt) {
 
         Integer id = JwtUtils.getUserId(jwt);
@@ -441,7 +449,7 @@ public class UserServiceImpl implements UserService {
         redisTemplate.opsForValue().set(email, verifyCode, 300, TimeUnit.SECONDS);
 
         // 发送邮件
-        emailService.sendVerificationCodeAsync(verifyCode, email);
+        sendVerificationCodeAsync(verifyCode, email);
     }
 
     @Override
@@ -503,7 +511,7 @@ public class UserServiceImpl implements UserService {
         }
         String code = ForgetVerifyCode(email);
 
-        emailService.sendVerificationCodeAsync(code, email);
+        sendVerificationCodeAsync(code, email);
 
     }
 
@@ -592,6 +600,49 @@ public class UserServiceImpl implements UserService {
 
         return generateLoginResponse(user);
 
+    }
+
+    @Override
+    public List<SingleDataSearchResp> getUserInfoSingleDataListBySearch(String search, String type){
+
+        List<SimpleDataSearchDTO> articleTitleSearchDTOS = switch (type) {
+            case "nickname" -> userMapper.getUserInfoNicknameListBySearch(search);
+            default -> new ArrayList<>();
+        };
+        return  articleTitleSearchDTOS.stream().map(this::convertArticleTitleSearchDTO2ArticleTitleSearchResp).toList();
+
+    }
+
+
+    private SingleDataSearchResp convertArticleTitleSearchDTO2ArticleTitleSearchResp(SimpleDataSearchDTO articleTitleSearchDTO){
+        SingleDataSearchResp articleTitleSearchResp = new SingleDataSearchResp();
+        articleTitleSearchResp.setId(articleTitleSearchDTO.getId());
+        articleTitleSearchResp.setValue(articleTitleSearchDTO.getName());
+        return articleTitleSearchResp;
+    }
+
+    private void sendVerificationCodeAsync(String code, String toEmail) {
+        try {
+            // 准备模板变量
+            Map<String, Object> templateVariables = new HashMap<>();
+            templateVariables.put("verifyCode", Arrays.asList(code.split("")));
+            templateVariables.put("createTime", new Date());
+
+            // 发送模板邮件
+            emailService.sendTemplateEmailAsync(
+                    toEmail,
+                    "【叶玲子的网页】验证码",
+                    "EmailVerificationCode.html",
+                    templateVariables,
+                    "LINK_ME_NOTIFICATION"
+            );
+
+            log.info("邮箱验证码发送到队列，验证邮箱: {}", emailService.maskEmail(toEmail));
+
+        } catch (Exception e) {
+            log.error("发送邮箱验证码失败: {}", e.getMessage());
+            // 这里可以选择不抛出异常，因为邮件发送失败不应该影响主要的留言功能
+        }
     }
 
 }

@@ -23,6 +23,8 @@ public interface ArticleCommentService {
 
     PageResult<ArticleComment> getArticleCommentListByPage(Integer page, Integer pageSize);
 
+    PageResult<ArticleComment> getArticleCommentListByIdAndPage(Integer articleId,Integer page, Integer pageSize);
+
     void delArticleComment(Integer id);
 
     void updateArticleComment(Integer id);

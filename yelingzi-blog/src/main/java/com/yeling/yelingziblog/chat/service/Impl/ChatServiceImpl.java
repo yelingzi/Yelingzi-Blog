@@ -125,20 +125,58 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public ChatMessageResp adminSendSingleMessage(User user, String message, String ip, String toUser) {
+    public void adminSendSingleMessage(User user, String message, String ip, String toUser, String type) {
+        if (type.equals(SINGLE)) {
+            adminSendMessage(user, message, ip, toUser, MessageTypeText);
+        } else if (type.equals(GROUP)) {
+            adminSendGroupMessage(user, message, ip, "chatroom", MessageTypeText);
+        }
+    }
 
-        SingleChatMessageDto chatMessageDto = new SingleChatMessageDto(0, user.getId(), user.getNickname(), checkMessage(message), toUser,  user.getNickname(), ip, MessageTypeText);
+    @Override
+    public void adminSendImageMessage(User user, MultipartFile message, String ip, String toUser){
+        String path = imageService.uploadImage(message, "/chat");
+        log.info("管理员：{}，发送图片消息：{}", user.getId(), path);
+        adminSendMessage(user, path, ip, toUser, MessageTypeImage);
+    }
+
+    @Override
+    public void adminSendEmojiMessage(User user, String message, String ip, String toUser, String type){
+        validateEmoji(message);
+
+        if (type.equals(SINGLE)) {
+            adminSendMessage(user, message, ip, toUser, MessageTypeEmoji);
+        } else if (type.equals(GROUP)) {
+            adminSendGroupMessage(user, message, ip, "chatroom", MessageTypeEmoji);
+        }
+    }
+
+    public void adminSendMessage(User user, String message, String ip, String toUser, String messageType) {
+
+        SingleChatMessageDto chatMessageDto = new SingleChatMessageDto(0, user.getId(), user.getNickname(), checkMessage(message), toUser,  user.getNickname(), ip, messageType);
 
         log.info("管理员发送消息, ID：{} ，接收对象：{}，消息内容： {}", user.getId(),  toUser, chatMessageDto.getMessage());
 
         int id = chatMapper.addChat(chatMessageDto);
-        Chat chat = chatMapper.selectById(id);
+        Chat chat = chatMapper.selectById(chatMessageDto.getId());
 
         ChatMessageResp chatMessageResp = convertToChatMessageResp(chat);
 
         rabbitTemplate.convertAndSend("chat.exchange", "chat.single", new PushMessageDto(toUser, user.getId().toString(),chatMessageResp));
 
-        return chatMessageResp;
+    }
+
+    public void adminSendGroupMessage(User user, String message, String ip, String toUser, String messageType) {
+
+        log.info("管理员发送消息, ID：{} ，接收对象：{}，消息内容： {}", user.getId(),  toUser, message);
+
+        GroupChatMessageDto chatMessageDto = new GroupChatMessageDto(0, user.getId(), user.getNickname(), user.getUserAvatar(), message, toUser, ip, messageType);
+
+        chatMapper.addGroupChat(chatMessageDto);
+        ChatMessageResp chatMessageResp = chatMapper.selectGroupChatById(chatMessageDto.getId());
+
+        rabbitTemplate.convertAndSend("chat.exchange", "chat.group", new PushMessageDto("chatroom", user.getId().toString(), chatMessageResp));
+
     }
 
     /**

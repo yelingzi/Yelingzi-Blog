@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yeling.yelingziblog.user.mapper.UserMapper">
+
+
+    <select id="getUserInfoNicknameListBySearch" parameterType="String"
+            resultType="com.yeling.yelingziblog.common.dto.SimpleDataSearchDTO">
+        SELECT id, nickname AS name
+        FROM user_info
+        <if test="search != null and search != ''">
+            WHERE nickname LIKE CONCAT('%', #{search}, '%')
+        </if>
+        LIMIT 0,10
+    </select>
+
+</mapper>

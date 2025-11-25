@@ -100,7 +100,7 @@ public class TalkController {
 
         log.info("获取文章标签列表,页数：{}，数据大小：{},管理员ID：{},邮箱：{}", page, pageSize,user.getId(), user.getEmail());
 
-        PageResult<Talk> talks = talkService.getTalkListByPage(page, pageSize);
+        PageResult<Talk> talks = talkService.getTalkListByPage(page, pageSize, user.getId());
         if (talks == null) {
             return ApiResponse.error("获取文章标签列表失败");
         }
@@ -216,9 +216,8 @@ public class TalkController {
 
 
     /**
-     * 获取置顶热门说说列表
+     * 获取置顶和热门说说列表
      *
-
      * @return 结果
      */
     @CrossOrigin(origins = "http://localhost:5173")

@@ -3,13 +3,13 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/ye_ling
     username: root
-    password:
+    password: # 数据库密码
   rabbitmq:
     host: localhost
     port: 5672
-    username:
-    password:
-    virtualHost:
+    username: # mq用户名
+    password: # mq密码
+    virtualHost: # mq虚拟主机
     listener:
       simple:
         prefetch: 1
@@ -17,8 +17,8 @@ spring:
           enabled: true
   ai:
     dashscope:
-      base-url:
-      api-key:
+      base-url: # https://dashscope.aliyuncs.com/compatible-mode
+      api-key: # 阿里云dashscope api-key
       chat:
         options:
           model: qwen-plus-2025-04-28
@@ -29,16 +29,23 @@ spring:
 
 file:
   upload:
-    savePath:
+    savePath:  # 服务器文件保存路径，以/image结尾
     relativePath: /image
-    saveArticlePath:
+    saveArticlePath: # 服务器文件保存路径，以/article结尾
     relativeArticlePath: /file/article
   jwtKeyPath: jwtKey/jwtKey.json
+  export: 
+    save-path: # 服务器文件保存路径，以/export/结尾
+    relative-path: /file/export/
 
 my:
   api:
     hz:
-      id:
-      key:
+      id: # api盒子天气id
+      key: # api盒子天气key
       w1path: https://cn.apihz.cn/api/tianqi/tqybip.php
       w2path: https://cn.apihz.cn/api/tianqi/tqyb.php
+
+link:
+  me:
+    email: # 消息发送到的邮箱

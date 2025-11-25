@@ -1,6 +1,8 @@
 package com.yeling.yelingziblog.chat.consumer;
 
+import com.yeling.yelingziblog.chat.dto.PushMessageData;
 import com.yeling.yelingziblog.chat.dto.PushMessageDto;
+import com.yeling.yelingziblog.common.dto.NettyPushMessage;
 import com.yeling.yelingziblog.websocket.NettyWebSocketServerHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.Exchange;
@@ -22,10 +24,14 @@ public class MessageSendConsumer {
     public void messageSend(PushMessageDto dto) {
         log.info("发送消息 sender={}, receiver={}", dto.getSender(), dto.getReceiver());
 
+        NettyPushMessage nettyPushMessageMe = new NettyPushMessage("success", "chat",
+                new PushMessageData(dto.getReceiver(), "single",dto.getMessage()));
+        NettyPushMessage nettyPushMessageToUser = new NettyPushMessage("success", "chat",
+                new PushMessageData(dto.getSender(), "single", dto.getMessage()));
         // 1. 推给自己
-        boolean selfOk = NettyWebSocketServerHandler.sendToUser(dto.getSender(), dto);
+        boolean selfOk = NettyWebSocketServerHandler.sendMessage(dto.getSender(), nettyPushMessageMe);
         // 2. 推给对方
-        boolean recvOk = NettyWebSocketServerHandler.sendToUser(dto.getReceiver(), dto);
+        boolean recvOk = NettyWebSocketServerHandler.sendMessage(dto.getReceiver(), nettyPushMessageToUser);
 
         if (!recvOk) {
             log.info("用户 {} 不在线", dto.getReceiver());
@@ -39,7 +45,9 @@ public class MessageSendConsumer {
     ))
     public void groupMessageSend(PushMessageDto pushMessageResp) {
         log.info("发送群聊消息：{}", pushMessageResp);
-        NettyWebSocketServerHandler.broadcastAll(pushMessageResp);
+        NettyPushMessage nettyPushMessage = new NettyPushMessage("success", "chat",
+                new PushMessageData(pushMessageResp.getReceiver(), "group", pushMessageResp.getMessage()));
+        NettyWebSocketServerHandler.broadcastAllMessage(nettyPushMessage);
     }
 
 }

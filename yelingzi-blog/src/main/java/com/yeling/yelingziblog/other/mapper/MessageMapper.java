@@ -29,7 +29,7 @@ public interface MessageMapper {
     int findMessageCount();
 
     @Select("""
-            SELECT COUNT(*) FROM message WHERE message_board_user=#{userId}
+            SELECT COUNT(*) FROM message WHERE message.user_id=#{userId}
             """)
     int findMessageCountByUserId(Integer userId);
 
@@ -39,7 +39,7 @@ public interface MessageMapper {
     List<Message> findMessageListByPage(int page, int pageSize);
 
     @Select("""
-            SELECT * FROM message WHERE message_board_user=#{userId} ORDER BY create_time DESC limit #{page},#{pageSize}
+            SELECT * FROM message WHERE message.user_id=#{userId} ORDER BY create_time DESC limit #{page},#{pageSize}
             """)
     List<Message> findMessagePageListByUserId(Integer userId, int page, int pageSize);
 
