@@ -47,12 +47,12 @@
 
 3.后端启动步骤
 1. 将 blog.sql 文件导入 MySQL 数据库
-2.修改配置文件：
-  将配置文件注释的对应位置添加自己的信息
-  - application.yml
-  - 开发环境：application-dev.yml
-  - 生产环境：application-prod.yml
-3. 放置 jwtKey.json 文件到配置中指定的目录
+2. 修改配置文件：
+   将配置文件注释的对应位置添加自己的信息
+   - application.yml
+   - 开发环境：application-dev.yml
+   - 生产环境：application-prod.yml
+3. 放置 jwtKey.json 文件到配置文件中编写的指定目录
 4. 通过 Gradle 下载依赖（也可将 build.gradle 转换为 Maven 格式下载）
 5. 启动项目
 
