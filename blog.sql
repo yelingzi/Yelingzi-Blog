@@ -101,7 +101,7 @@ CREATE TABLE `article` (
   `is_top` int(11) NOT NULL DEFAULT '0',
   `brief` varchar(128) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -110,6 +110,7 @@ CREATE TABLE `article` (
 
 LOCK TABLES `article` WRITE;
 /*!40000 ALTER TABLE `article` DISABLE KEYS */;
+INSERT INTO `article` VALUES (1,'管理员08','算法','## 题目\n\n给你一个整数数组 coins ，表示不同面额的硬币；以及一个整数 amount ，表示总金额。\n\n计算并返回可以凑成总金额所需的 最少的硬币个数 。如果没有任何一种硬币组合能组成总金额，返回 -1 。\n\n你可以认为每种硬币的数量是无限的。\n\n**示例 1：**\n\n- 输入：coins = [1, 2, 5], amount = 11\n- 输出：3\n- 解释：11 = 5 + 5 + 1\n\n**示例 2：**\n\n- 输入：coins = [2], amount = 3\n- 输出：-1\n\n**示例 3：**\n\n- 输入：coins = [1], amount = 0\n- 输出：0\n\n提示：\n\n- 1 <= coins.length <= 12\n- 1 <= coins[i] <= 231 - 1\n- 0 <= amount <= 104\n\n## 解题思路\n\n我首先考虑的是使用贪心算法求解，但该方法并不适用于所有情况。例如在测试中，本地测试案例能通过，但提交后会出现不通过的情况。\n\n以具体场景为例：当 coins = [3, 4, 5]、amount = 11 时，11 可由 4+4+3 或 5+3+3 组成，但贪心算法会优先选择最大面额 5，兑换两次后剩余 1 无法兑换，最终返回 - 1。这说明贪心算法仅能在特定硬币组合，如面额为 1、5、10 等中生效，无法覆盖所有场景。\n\n贪心算法的代码如下（仅作示例，不适用所有情况）：\n\n```Java\nclass Solution {\n    public int coinChange(int[] coins, int amount) {\n        int pointer = coins.length - 1;\n        int count = 0;\n        Arrays.sort(coins);\n        while (pointer != -1) {\n            if (amount >= coins[pointer]) {\n                amount -= coins[pointer];\n                count++;\n            } else if (amount == 0) {\n                return count;\n            } else if (amount < coins[pointer]) {\n                pointer--;\n            }\n        }\n        return -1;\n    }\n}\n\n```\n\n既然贪心算法无法覆盖所有情况，那还有什么办法能解决这个问题呢？\n\n我们不妨换个思路：如果能先算出前面金额的最优解，再靠着这些已知的最优解去推导后面金额的最优解，这样行不行呢？显然是可行的，这正是我要介绍的方法 —— 动态规划。\n\n用动态规划解决这个问题，可以按这几步来走：\n\n1. ✅ 定义状态\n   设dp[i] = 拼出金额 i 所需的最少硬币数。\n2. ✅ 初始条件\n   dp[0] = 0，金额 0 不需要任何硬币。\n   其他位置先设成“无穷大”，这里用 amount + 1 代替，因为最多也就用 amount 枚 1 元硬币。\n3. ✅ 状态转移方程\n   对于每个金额 i，从 1 到 amount，我们尝试最后一枚硬币是什么：\n   如果最后一枚是 coin，那么前面 i - coin 的钱已经算过，就是 dp[i - coin]，再加 1 枚即可。\n\n```Java\nfor (int coin : coins) {\n    if (i >= coin) {\n        dp[i] = min(dp[i], dp[i - coin] + 1);\n    }\n}\n\n```\n\n4. ✅ 举个例子\n   还是之前的例子，coins = [3, 4, 5]，amount = 11\n\n   | i   | 1   | 2   | 3   | 4   | 5   | ... | 8   | 9   | 10  | 11  |\n   | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n   | dp  | 0   | 0   | 1   | 1   | 1   | ... | 2   | 2   | 2   | 3   |\n\n   - dp[3] = 1 （一枚 3）\n   - dp[4] = 1 （一枚 4）\n   - dp[5] = 1 （一枚 5）\n   - dp[10] = min(dp[10-3]+1, dp[10-4]+1, dp[10-5]+1) = min(3, 3, 2) = 2\n   - dp[11] = min(dp[11-3]+1, dp[11-4]+1, dp[11-5]+1) = min(3, 3, 3) = 3\n\n5. ✅ 返回值\n   如果 dp[amount] 还是初始的“无穷大”，说明拼不出来，返回 -1。\n\n简而言之，从小到大算每个金额的最优解，每次都看“最后一枚硬币”能不能让答案更优。动态规划具体代码如下：\n\n```Java\nclass Solution {\n    public int coinChange(int[] coins, int amount) {\n        int[] dp = new int[amount + 1];\n        Arrays.fill(dp, amount + 1);\n        dp[0] = 0;\n\n        for (int i = 1; i <= amount; i++) {\n            for (int coin : coins) {\n                if (i >= coin) {\n                    dp[i] = Math.min(dp[i], dp[i - coin] + 1);\n                }\n            }\n        }\n\n        return dp[amount] > amount ? -1 : dp[amount];\n    }\n}\n\n```\n','/image/article/cover/c22b221e-2096-4007-b502-a9526ff4009c.png','{\"id\":1,\"categoryName\":\"数据结构\"}','/file/article/mdcfcc1304-c68b-4f50-9bde-3f3c88d0f5e4.md',0,'2025-11-25 15:07:49','2025-11-25 15:07:49',0,0,0,8,'/image/avatar/avatar88.png','[{\"id\":1,\"tagName\":\"Java\"},{\"id\":2,\"tagName\":\"Vue\"}]',0,1,'',0,'给你一个整数数组 coins ，表示不同面额的硬币；以及一个整数 amount ，表示总金额。 计算并返回可以凑成总金额所需的 最少的硬币个数 。如果没有任何一种硬币组合能组成总金额，返回 -1 。 你可以认为每种硬币的数量是无限的。 示例...');
 /*!40000 ALTER TABLE `article` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -129,7 +130,7 @@ CREATE TABLE `article_category` (
   `is_del` int(11) NOT NULL DEFAULT '0',
   `article_count` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -138,6 +139,7 @@ CREATE TABLE `article_category` (
 
 LOCK TABLES `article_category` WRITE;
 /*!40000 ALTER TABLE `article_category` DISABLE KEYS */;
+INSERT INTO `article_category` VALUES (1,'数据结构','2025-11-25 15:06:06',8,'管理员08',0,1),(2,'前端','2025-11-25 15:06:36',8,'管理员08',0,0);
 /*!40000 ALTER TABLE `article_category` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -157,13 +159,13 @@ CREATE TABLE `article_comment` (
   `parent_id` int(11) NOT NULL DEFAULT '0',
   `state` tinyint(1) NOT NULL DEFAULT '0',
   `like_count` int(11) NOT NULL DEFAULT '0',
-  `to_nickname` varchar(20) DEFAULT NULL,
+  `to_nickname` varchar(16) DEFAULT NULL,
   `user_nickname` varchar(20) NOT NULL,
   `to_id` int(11) DEFAULT NULL,
   `user_avatar` varchar(64) NOT NULL,
   `reply_count` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -189,7 +191,7 @@ CREATE TABLE `article_comment_like` (
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `article_id` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -214,7 +216,7 @@ CREATE TABLE `article_like` (
   `user_id` int(11) NOT NULL,
   `like_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -239,7 +241,7 @@ CREATE TABLE `article_tag` (
   `article_count` int(11) NOT NULL DEFAULT '0',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `user_id` int(11) NOT NULL DEFAULT '0',
-  `nickname` varchar(20) NOT NULL DEFAULT '',
+  `nickname` varchar(16) NOT NULL DEFAULT '',
   `is_del` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COMMENT='文章标签';
@@ -251,6 +253,7 @@ CREATE TABLE `article_tag` (
 
 LOCK TABLES `article_tag` WRITE;
 /*!40000 ALTER TABLE `article_tag` DISABLE KEYS */;
+INSERT INTO `article_tag` VALUES (1,'Java',1,'2025-11-25 15:06:15',8,'管理员08',0),(2,'Vue',1,'2025-11-25 15:06:19',8,'管理员08',0),(3,'算法',0,'2025-11-25 15:06:28',8,'管理员08',0);
 /*!40000 ALTER TABLE `article_tag` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -266,7 +269,7 @@ CREATE TABLE `article_tag_link` (
   `tag_id` int(11) NOT NULL DEFAULT '0',
   `article_id` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -275,6 +278,7 @@ CREATE TABLE `article_tag_link` (
 
 LOCK TABLES `article_tag_link` WRITE;
 /*!40000 ALTER TABLE `article_tag_link` DISABLE KEYS */;
+INSERT INTO `article_tag_link` VALUES (1,1,1),(2,2,1);
 /*!40000 ALTER TABLE `article_tag_link` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -297,7 +301,7 @@ CREATE TABLE `chat` (
   `ip` varchar(45) DEFAULT NULL,
   `message_type` varchar(10) NOT NULL DEFAULT 'text',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -320,11 +324,20 @@ CREATE TABLE `chat_ai` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `session_id` varchar(45) NOT NULL,
   `role` varchar(45) NOT NULL,
-  `content` text NOT NULL,
+  `cntent` text NOT NULL,
   `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `chat_ai`
+--
+
+LOCK TABLES `chat_ai` WRITE;
+/*!40000 ALTER TABLE `chat_ai` DISABLE KEYS */;
+/*!40000 ALTER TABLE `chat_ai` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `chat_ai_user_link`
@@ -339,8 +352,17 @@ CREATE TABLE `chat_ai_user_link` (
   `user_ident` varchar(45) NOT NULL,
   `description` varchar(45) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `chat_ai_user_link`
+--
+
+LOCK TABLES `chat_ai_user_link` WRITE;
+/*!40000 ALTER TABLE `chat_ai_user_link` DISABLE KEYS */;
+/*!40000 ALTER TABLE `chat_ai_user_link` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `classestable`
@@ -393,7 +415,7 @@ CREATE TABLE `friend` (
   `user_id` int(11) NOT NULL,
   `nickname` varchar(45) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COMMENT='友情链接';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='友情链接';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -425,7 +447,7 @@ CREATE TABLE `group_chat` (
   `message_type` varchar(10) NOT NULL DEFAULT 'text',
   `user_avatar` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -434,6 +456,7 @@ CREATE TABLE `group_chat` (
 
 LOCK TABLES `group_chat` WRITE;
 /*!40000 ALTER TABLE `group_chat` DISABLE KEYS */;
+INSERT INTO `group_chat` VALUES (1,8,'管理员08','大家好吖，喵！','2025-11-25 15:08:34',0,'chatroom','0:0:0:0:0:0:0:1','text','/image/avatar/avatar88.png');
 /*!40000 ALTER TABLE `group_chat` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -462,6 +485,36 @@ CREATE TABLE `home_bg` (
 LOCK TABLES `home_bg` WRITE;
 /*!40000 ALTER TABLE `home_bg` DISABLE KEYS */;
 /*!40000 ALTER TABLE `home_bg` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `link_me`
+--
+
+DROP TABLE IF EXISTS `link_me`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `link_me` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `content` text NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `images` text,
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `status` int(11) NOT NULL DEFAULT '0' COMMENT '0 未处理\n1 已处理\n2 已删除',
+  PRIMARY KEY (`id`),
+  KEY `idx_email` (`email`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `link_me`
+--
+
+LOCK TABLES `link_me` WRITE;
+/*!40000 ALTER TABLE `link_me` DISABLE KEYS */;
+/*!40000 ALTER TABLE `link_me` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -525,7 +578,7 @@ CREATE TABLE `message` (
 
 LOCK TABLES `message` WRITE;
 /*!40000 ALTER TABLE `message` DISABLE KEYS */;
-INSERT INTO `message` VALUES (1,'留言','游客','2025-04-16 15:04:03','0:0:0:0:0:0:0:1','未知',0,NULL,0),(2,'测试','游客','2025-04-20 17:26:21','0:0:0:1','未知',2,'',0),(3,'测试','游客','2025-04-20 17:26:22','0:0:0:1','未知',2,'',0),(4,'dhaduhaoidhaoidjaidjadpjadjoadjfbryjfgeyisi分数俄方好饿粉红色哦i纷纷色i飞机四分','游客','2025-05-02 07:29:18','0:0:0:0:0:0:0:1','未知',0,NULL,0),(5,'','游客','2025-05-02 07:29:35','0:0:0:0:0:0:0:1','未知',0,NULL,0),(6,'阿达达瓦的','游客','2025-05-02 07:31:20','0:0:0:0:0:0:0:1','未知',0,NULL,0),(7,'是大家都加了我的家啊看了上面的上课点名啊看得见吗里的经济模式卡没带打开了大门来得及啊宽的马路看到你1骄傲的马克思摩擦时开幕的摩擦扣税的马路的模块2','游客','2025-05-02 07:32:48','0:0:0:0:0:0:0:1','未知',0,NULL,0),(8,'123456','游客','2025-08-09 15:06:03','0:0:0:0:0:0:0:1','未知',0,NULL,0);
+INSERT INTO `message` VALUES (1,'留言','游客','2025-04-16 15:04:03','0:0:0:0:0:0:0:1','未知',0,NULL,0),(2,'测试','游客','2025-04-20 17:26:21','0:0:0:1','未知',2,'',0),(3,'测试','游客','2025-04-20 17:26:22','0:0:0:1','未知',2,'',0),(4,'11222323','游客','2025-05-02 07:29:18','0:0:0:0:0:0:0:1','未知',0,NULL,0),(5,'','游客','2025-05-02 07:29:35','0:0:0:0:0:0:0:1','未知',0,NULL,0),(6,'阿达达瓦的','游客','2025-05-02 07:31:20','0:0:0:0:0:0:0:1','未知',0,NULL,0),(7,'11111','游客','2025-05-02 07:32:48','0:0:0:0:0:0:0:1','未知',0,NULL,0),(8,'123456','游客','2025-08-09 15:06:03','0:0:0:0:0:0:0:1','未知',0,NULL,0);
 /*!40000 ALTER TABLE `message` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -598,7 +651,7 @@ CREATE TABLE `talk_comment` (
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `parent_id` int(11) NOT NULL DEFAULT '0',
   `to_id` int(11) DEFAULT NULL,
-  `to_nickname` varchar(20) DEFAULT NULL,
+  `to_nickname` varchar(16) DEFAULT NULL,
   `like_count` int(11) NOT NULL DEFAULT '0',
   `reply_count` int(11) NOT NULL DEFAULT '0',
   `state` int(11) NOT NULL DEFAULT '0',
@@ -688,7 +741,7 @@ CREATE TABLE `talks` (
   `comment_count` int(11) NOT NULL DEFAULT '0',
   `title` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -697,6 +750,7 @@ CREATE TABLE `talks` (
 
 LOCK TABLES `talks` WRITE;
 /*!40000 ALTER TABLE `talks` DISABLE KEYS */;
+INSERT INTO `talks` VALUES (1,'管理员08','测试','','2025-11-25 15:08:02',0,8,'/image/avatar/avatar88.png',0,0,0,'测试');
 /*!40000 ALTER TABLE `talks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -725,7 +779,7 @@ CREATE TABLE `user_info` (
   UNIQUE KEY `user_name_UNIQUE` (`email`),
   UNIQUE KEY `user_id_UNIQUE` (`user_id`),
   UNIQUE KEY `ni_cheng_UNIQUE` (`nickname`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -755,7 +809,7 @@ CREATE TABLE `users` (
   `state` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_name_UNIQUE` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -764,7 +818,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (8,'123456@123456.com','d19b8753f81899abe82d9224ca960fa07bd1c1155b708fcab9efcb9f3ed6dc74','2025-01-28 07:45:17','2025-01-28 07:45:17','test',0);
+INSERT INTO `users` VALUES (8,'123456@123456.com','d19b8753f81899abe82d9224ca960fa07bd1c1155b708fcab9efcb9f3ed6dc74','2025-01-28 07:45:17','2025-01-28 07:45:17','admin',0);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -830,4 +884,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-10 22:56:18
+-- Dump completed on 2025-11-25 23:10:31
