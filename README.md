@@ -40,6 +40,7 @@
 - 前端项目: <br>
   - blog-web：博客前台界面
   - blog-admin：博客后台管理系统
+  - blog-unapp：小程序版本，与前台界面手机展示有一定差异
 - 后端项目：yelingzi-blog 目录
 - 数据库文件：blog.sql
 - 密钥文件：jwtKey.json（可自行创建，格式为简单键值对）
