@@ -22,6 +22,9 @@
 ![](https://www.yeling.top/image/album/show3.jpg)
 ![](https://www.yeling.top/image/album/show4.jpg)
 ![](https://www.yeling.top/image/album/show7.jpg)
+![](https://www.yeling.top/image/album/show8.jpg)
+![](https://www.yeling.top/image/album/show9.jpg)
+![](https://www.yeling.top/image/album/show10.jpg)
 
 ## 快速开始
 1.环境要求
@@ -38,17 +41,22 @@
   - blog-web：博客前台界面
   - blog-admin：博客后台管理系统
 - 后端项目：yelingzi-blog 目录
-- 数据库文件：根目录下的 blog.sql
+- 数据库文件：blog.sql
 - 密钥文件：jwtKey.json（可自行创建，格式为简单键值对）
+- Nginx配置文件：nginx.conf
 
 3.后端启动步骤
 1. 将 blog.sql 文件导入 MySQL 数据库
 2.修改配置文件：
-  - application.properties
-  - application-dev.properties
+  将配置文件注释的对应位置添加自己的信息
+  - application.yml
+  - 开发环境：application-dev.yml
+  - 生产环境：application-prod.yml
 3. 放置 jwtKey.json 文件到配置中指定的目录
 4. 通过 Gradle 下载依赖（也可将 build.gradle 转换为 Maven 格式下载）
 5. 启动项目
+
+注：即时聊天中与管理员聊天为硬编码，请自行修改
 
 4.前端启动步骤
 ```
@@ -57,9 +65,11 @@ pnpm install
 
 # 开发环境启动
 pnpm dev
-```
-注意：项目未使用对象存储服务 (OSS)，而是采用 Nginx 作为文件服务器。若不经过 Nginx 反向代理，可能导致图片无法正常加载。
-```
+
 # 生产环境打包
 pnpm build
 ```
+注：
+- 项目未使用对象存储服务 (OSS)，而是采用 Nginx 作为文件服务器。若不经过 Nginx 反向代理，可能导致图片无法正常加载。
+- /src/assets/locales文件夹下为语言切换文件，/src/stores/modules文件夹下为缓存文件，其中这两个文件夹下都有硬编码内容，可修改为自己的信息
+
